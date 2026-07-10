@@ -1,0 +1,197 @@
+# Card role categories for adaptive deck building.
+# A card may appear in multiple categories; builder picks best per slot.
+
+categories:
+  win_condition:
+    - hog_rider
+    - giant
+    - golem
+    - balloon
+    - hero_balloon
+    - graveyard
+    - royal_giant
+    - royal_giant_evo
+    - miner
+    - x_bow
+    - mortar
+    - mortar_evo
+    - lava_hound
+    - wall_breakers
+    - wall_breakers_evo
+    - royal_hogs
+    - royal_hogs_evo
+    - ram_rider
+    - battle_ram
+    - battle_ram_evo
+    - pekka
+    - pekka_evo
+    - goblin_drill
+    - goblin_drill_evo
+    - hero_tombstone
+
+  spell:
+    - fireball
+    - zap
+    - zap_evo
+    - arrows
+    - log
+    - poison
+    - earthquake
+    - rocket
+    - tornado
+    - lightning
+    - freeze
+    - giant_snowball
+    - giant_snowball_evo
+    - goblin_barrel
+    - goblin_barrel_evo
+    - skeleton_barrel
+    - skeleton_barrel_evo
+    - barbarian_barrel
+
+  building:
+    - cannon
+    - cannon_evo
+    - tesla
+    - tesla_evo
+    - tombstone
+    - inferno_tower
+    - mortar
+    - mortar_evo
+    - x_bow
+    - furnace
+    - furnace_evo
+    - goblin_hut
+    - goblin_cage
+    - goblin_cage_evo
+
+  swarm:
+    - skeletons
+    - skeletons_evo
+    - goblins
+    - hero_goblins
+    - skeleton_army
+    - skeleton_army_evo
+    - minions
+    - bats
+    - bats_evo
+    - goblin_gang
+    - barbarians
+    - barbarians_evo
+    - minion_horde
+    - minion_horde_evo
+    - royal_recruits
+    - royal_recruits_evo
+
+  support:
+    - musketeer
+    - musketeer_evo
+    - hero_musketeer
+    - archers
+    - archers_evo
+    - ice_wizard
+    - electro_wizard
+    - wizard
+    - wizard_evo
+    - hero_wizard
+    - bomber
+    - bomber_evo
+    - hunter
+    - hunter_evo
+    - fisherman
+    - zappies
+    - firecracker
+    - firecracker_evo
+    - baby_dragon
+    - baby_dragon_evo
+    - witch
+    - witch_evo
+    - night_witch
+    - magic_archer
+    - hero_magic_archer
+    - dart_goblin
+    - dart_goblin_evo
+
+  air:
+    - balloon
+    - hero_balloon
+    - minions
+    - baby_dragon
+    - baby_dragon_evo
+    - lava_hound
+    - phoenix
+    - mega_minion
+    - hero_mega_minion
+    - minion_horde
+    - minion_horde_evo
+    - inferno_dragon
+    - inferno_dragon_evo
+    - electro_dragon
+    - electro_dragon_evo
+
+  heavy:
+    - pekka
+    - pekka_evo
+    - giant
+    - hero_giant
+    - golem
+    - royal_giant
+    - royal_giant_evo
+    - bowler
+    - valkyrie
+    - valkyrie_evo
+    - mini_pekka
+    - hero_mini_pekka
+    - prince
+    - dark_prince
+    - mega_knight
+    - mega_knight_evo
+    - goblin_giant
+    - goblin_giant_evo
+    - lumberjack
+    - lumberjack_evo
+
+  cycle:
+    - ice_spirit
+    - ice_spirit_evo
+    - skeletons
+    - skeletons_evo
+    - ice_golem
+    - hero_ice_golem
+    - firecracker
+    - firecracker_evo
+    - bats
+    - bats_evo
+
+  hero:
+    - hero_knight
+    - hero_goblins
+    - hero_musketeer
+    - hero_giant
+    - hero_mini_pekka
+    - hero_wizard
+    - hero_ice_golem
+    - hero_balloon
+    - hero_barbarian_barrel
+    - hero_magic_archer
+    - hero_mega_minion
+    - hero_tombstone
+    - golden_knight
+    - skeleton_king
+    - archer_queen
+    - mighty_miner
+    - monk
+    - little_prince
+    - boss_bandit
+    - goblinstein
+
+# Category pick order when assembling an 8-card deck.
+assembly_order:
+  - win_condition
+  - spell
+  - building
+  - cycle
+  - support
+  - swarm
+  - air
+  - heavy

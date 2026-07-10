@@ -1,0 +1,289 @@
+# Top ladder meta decks for Ultimate Champion training opponents.
+# Sources (curated 2026-07-09):
+#   - RoyaleAPI TopRanked 7d (Ultimate Champion): royaleapi.com/decks/popular
+#   - RoyaleAPI Season 81 leaderboard decks (March-April 2026)
+#   - Meta guides: Graveyard Poison, Royal Hogs EQ, Miner WB, RG Cycle, Hog 2.6
+# Card names must exist in cards.yaml, heroes.yaml, or evolutions.yaml (_evo suffix).
+
+decks:
+  # --- RoyaleAPI top-rated (Season 81 / April 2026) ---
+  - name: evo_mortar_gob_bait
+    archetype: bait
+    cards: [mortar_evo, miner, skeleton_army, goblin_gang, bats, firecracker, log, rocket]
+
+  - name: gs_evo_ram_hero_wiz
+    archetype: bridge_spam
+    cards: [giant, ram_rider, wizard, mighty_miner, zap, fireball, mini_pekka, electro_wizard]
+
+  - name: gk_gy_bowler_evo_exec
+    archetype: graveyard
+    cards: [golden_knight, graveyard, bowler, executioner_evo, poison, tornado, skeletons, ice_wizard]
+
+  - name: loon_hero_knight_dragons
+    archetype: beatdown
+    cards: [balloon, hero_knight, baby_dragon, bowler, lumberjack, zap, arrows, mega_minion]
+
+  - name: hog_mm_evo_cannon_26
+    archetype: cycle
+    cards: [hog_rider, musketeer, cannon, ice_spirit, skeletons, ice_golem, fireball, log]
+
+  - name: golem_evo_lj_nw_phoenix
+    archetype: beatdown
+    cards: [golem, lumberjack, night_witch, phoenix, baby_dragon, tornado, lightning, barbarians]
+
+  - name: evo_wb_berserker_bats_26
+    archetype: cycle
+    cards: [wall_breakers_evo, lumberjack, bats, ice_spirit, skeletons, ice_golem, fireball, log]
+
+  - name: hog_evo_exec_hero_gobs_nado
+    archetype: cycle
+    cards: [hog_rider, executioner_evo, hero_knight, goblins, ice_spirit, ice_golem, tornado, log]
+
+  - name: hero_knight_log_bait_29
+    archetype: bait
+    cards: [hero_knight, goblin_gang, skeleton_army, firecracker, rocket, log, ice_spirit, cannon]
+
+  - name: xbow_hero_knight_30
+    archetype: siege
+    cards: [x_bow, hero_knight, tesla, archers, skeletons, ice_spirit, fireball, log]
+
+  - name: hog_hero_ig_26
+    archetype: cycle
+    cards: [hog_rider, hero_knight, ice_golem, ice_spirit, musketeer, skeletons, fireball, log]
+
+  - name: rhogs_evo_rr_fm_zappies
+    archetype: bridge_spam
+    cards: [royal_hogs, ram_rider, fireball, zappies, electro_wizard, barbarians, arrows, log]
+
+  - name: evo_rg_fisherman_hunter
+    archetype: cycle
+    cards: [royal_giant_evo, fisherman, hunter, electro_wizard, fireball, skeletons, zap, log]
+
+  - name: evo_musk_miner_29
+    archetype: cycle
+    cards: [musketeer_evo, miner, skeletons, bats, poison, fireball, ice_spirit, log]
+
+  - name: pekka_bandit_ewiz_ghost
+    archetype: bridge_spam
+    cards: [pekka, bandit, electro_wizard, wizard, zap, poison, ram_rider, mini_pekka]
+
+  - name: wb_hero_gobs_evo_valk_bait
+    archetype: bait
+    cards: [wall_breakers, hero_knight, goblins, valkyrie_evo, skeleton_army, log, fireball, cannon]
+
+  - name: evo_rhogs_aq_evo_cannon
+    archetype: cycle
+    cards: [royal_hogs, archer_queen, cannon, fireball, skeletons, ice_spirit, log, electro_wizard]
+
+  - name: hog_mm_28
+    archetype: cycle
+    cards: [hog_rider, musketeer, ice_spirit, skeletons, ice_golem, fireball, log, cannon]
+
+  - name: evo_wb_miner_bats_24
+    archetype: cycle
+    cards: [wall_breakers_evo, miner, bats, skeletons, ice_spirit, poison, log, firecracker]
+
+  # --- Ranked / UC staples (guides, March-April 2026) ---
+  - name: gy_poison_control
+    archetype: graveyard
+    cards: [graveyard, poison, bowler, ice_wizard, knight, skeletons, tornado, barbarians]
+
+  - name: royal_hogs_earthquake
+    archetype: bridge_spam
+    cards: [royal_hogs, earthquake, fireball, zappies, electro_wizard, barbarians, skeletons, log]
+
+  - name: miner_wall_breakers
+    archetype: cycle
+    cards: [miner, wall_breakers, bats, skeletons, ice_spirit, fireball, log, cannon]
+
+  - name: royal_giant_cycle
+    archetype: cycle
+    cards: [royal_giant, fisherman, hunter, fireball, skeletons, electro_wizard, zap, log]
+
+  - name: hog_earthquake_cycle
+    archetype: cycle
+    cards: [hog_rider, earthquake, fireball, ice_spirit, skeletons, ice_golem, musketeer, log]
+
+  - name: hero_knight_miner_rocket
+    archetype: control
+    cards: [hero_knight, miner, rocket, skeletons, ice_spirit, bats, log, inferno_tower]
+
+  - name: miner_balloon
+    archetype: beatdown
+    cards: [miner, balloon, lumberjack, ice_spirit, skeletons, fireball, musketeer, barbarians]
+
+  - name: lava_loon
+    archetype: beatdown
+    cards: [lava_hound, balloon, mega_minion, tombstone, arrows, fireball, minions, skeletons]
+
+  - name: lava_loon_lightning
+    archetype: beatdown
+    cards: [lava_hound, balloon, mega_minion, tombstone, lightning, arrows, minions, skeletons]
+
+  - name: giant_double_prince
+    archetype: beatdown
+    cards: [giant, prince, dark_prince, witch, minions, zap, arrows, musketeer]
+
+  - name: golem_night_witch
+    archetype: beatdown
+    cards: [golem, night_witch, baby_dragon, lumberjack, tornado, lightning, barbarians, mega_minion]
+
+  - name: pekka_bridge_spam
+    archetype: bridge_spam
+    cards: [pekka, ram_rider, bandit, electro_wizard, poison, zap, minions, barbarians]
+
+  - name: mortar_miner_bait
+    archetype: bait
+    cards: [mortar, miner, skeleton_army, bats, goblin_gang, firecracker, log, rocket]
+
+  - name: log_bait_classic
+    archetype: bait
+    cards: [goblin_gang, skeleton_army, firecracker, rocket, log, ice_spirit, knight, inferno_tower]
+
+  - name: xbow_30_tesla
+    archetype: siege
+    cards: [x_bow, tesla, archers, skeletons, ice_spirit, fireball, log, knight]
+
+  - name: mortar_cycle
+    archetype: siege
+    cards: [mortar, miner, skeletons, bats, arrows, fireball, knight, log]
+
+  - name: hog_nado_exec
+    archetype: cycle
+    cards: [hog_rider, tornado, executioner, ice_golem, ice_spirit, skeletons, fireball, log]
+
+  - name: hog_zap_cycle
+    archetype: cycle
+    cards: [hog_rider, zap, ice_spirit, skeletons, ice_golem, fireball, musketeer, cannon]
+
+  - name: rg_fisherman_hunter_classic
+    archetype: cycle
+    cards: [royal_giant, fisherman, hunter, fireball, electro_wizard, skeletons, zap, log]
+
+  - name: skeleton_king_gy
+    archetype: graveyard
+    cards: [skeleton_king, graveyard, bowler, poison, ice_wizard, skeletons, tornado, barbarians]
+
+  - name: aq_rhogs_cycle
+    archetype: cycle
+    cards: [archer_queen, royal_hogs, fireball, skeletons, ice_spirit, log, electro_wizard, cannon]
+
+  - name: mighty_miner_wb
+    archetype: cycle
+    cards: [mighty_miner, wall_breakers, bats, skeletons, ice_spirit, fireball, log, cannon]
+
+  - name: golden_knight_hog
+    archetype: cycle
+    cards: [golden_knight, hog_rider, fireball, ice_spirit, skeletons, ice_golem, musketeer, log]
+
+  - name: beatdown_giant_musk
+    archetype: beatdown
+    cards: [giant, musketeer, mini_pekka, valkyrie, minions, fireball, skeletons, zap]
+
+  - name: witch_golem
+    archetype: beatdown
+    cards: [golem, witch, baby_dragon, lumberjack, tornado, arrows, barbarians, mega_minion]
+
+  - name: balloon_freeze_beatdown
+    archetype: beatdown
+    cards: [balloon, lumberjack, freeze, ice_spirit, skeletons, musketeer, barbarians, arrows]
+
+  - name: miner_poison_control
+    archetype: control
+    cards: [miner, poison, skeletons, bats, ice_spirit, inferno_tower, log, valkyrie]
+
+  - name: furnace_hog
+    archetype: cycle
+    cards: [hog_rider, furnace, fireball, ice_spirit, skeletons, musketeer, log, mini_pekka]
+
+  - name: goblin_hut_spam
+    archetype: control
+    cards: [goblin_hut, miner, poison, skeletons, bats, log, fireball, valkyrie]
+
+  - name: dark_prince_bridge
+    archetype: bridge_spam
+    cards: [dark_prince, bandit, ram_rider, electro_wizard, poison, zap, minions, barbarians]
+
+  - name: minion_horde_bait
+    archetype: bait
+    cards: [goblin_gang, skeleton_army, minion_horde, rocket, log, ice_spirit, knight, cannon]
+
+  - name: three_musk_style
+    archetype: beatdown
+    cards: [giant, musketeer, valkyrie, minions, fireball, zap, skeletons, archers]
+
+  - name: inferno_tower_hog
+    archetype: cycle
+    cards: [hog_rider, inferno_tower, ice_spirit, skeletons, fireball, musketeer, log, ice_golem]
+
+  - name: zap_bait_spirit
+    archetype: bait
+    cards: [goblin_gang, skeleton_army, bats, rocket, log, ice_spirit, knight, cannon]
+
+  - name: rg_evo_lightning
+    archetype: cycle
+    cards: [royal_giant_evo, lightning, fisherman, hunter, skeletons, zap, log, electro_wizard]
+
+  - name: hog_eq_rhogs_hybrid
+    archetype: bridge_spam
+    cards: [hog_rider, royal_hogs, earthquake, fireball, skeletons, ice_spirit, log, musketeer]
+
+  - name: balloon_lumberjack_freeze
+    archetype: beatdown
+    cards: [balloon, lumberjack, freeze, ice_golem, skeletons, arrows, mega_minion, zap]
+
+  - name: pekka_ewiz_wizard
+    archetype: bridge_spam
+    cards: [pekka, electro_wizard, wizard, ram_rider, poison, zap, minions, skeletons]
+
+  - name: xbow_archer_queen
+    archetype: siege
+    cards: [x_bow, archer_queen, tesla, archers, skeletons, fireball, log, ice_spirit]
+
+  - name: mortar_evo_bait
+    archetype: bait
+    cards: [mortar_evo, miner, bats, skeleton_army, goblin_gang, log, rocket, firecracker]
+
+  - name: hero_knight_balloon
+    archetype: beatdown
+    cards: [hero_knight, balloon, lumberjack, ice_spirit, skeletons, arrows, mega_minion, zap]
+
+  - name: sk_gy_poison
+    archetype: graveyard
+    cards: [skeleton_king, graveyard, poison, bowler, ice_wizard, skeletons, tornado, barbarians]
+
+  - name: evo_knight_hog_cycle
+    archetype: cycle
+    cards: [knight_evo, hog_rider, ice_spirit, skeletons, ice_golem, fireball, musketeer, log]
+
+  - name: rg_hunter_fish_evo
+    archetype: cycle
+    cards: [royal_giant_evo, hunter, fisherman, electro_wizard, fireball, skeletons, zap, log]
+
+  - name: wb_bats_miner_poison
+    archetype: cycle
+    cards: [wall_breakers, miner, bats, poison, skeletons, ice_spirit, log, cannon]
+
+  - name: lava_balloon_tombstone
+    archetype: beatdown
+    cards: [lava_hound, balloon, tombstone, mega_minion, arrows, fireball, minions, skeletons]
+
+  - name: giant_witch_prince
+    archetype: beatdown
+    cards: [giant, witch, prince, minions, zap, arrows, musketeer, skeletons]
+
+  - name: hog_fireball_cannon
+    archetype: cycle
+    cards: [hog_rider, fireball, cannon, ice_spirit, skeletons, ice_golem, musketeer, log]
+
+  - name: miner_gy_poison
+    archetype: graveyard
+    cards: [miner, graveyard, poison, bowler, ice_wizard, skeletons, log, tombstone]
+
+  - name: rhogs_eq_barbarians
+    archetype: bridge_spam
+    cards: [royal_hogs, earthquake, barbarians, fireball, zappies, skeletons, log, electro_wizard]
+
+  - name: pekka_minions_bandit
+    archetype: bridge_spam
+    cards: [pekka, bandit, minions, electro_wizard, poison, zap, ram_rider, skeletons]

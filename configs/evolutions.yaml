@@ -1,0 +1,197 @@
+# Evolution stat overrides — merged onto base card at load time as `{base}_evo`.
+# One evolution card allowed per deck; cannot include both base and evo.
+#
+# Complete roster (40, March 2026 meta):
+#   archers, baby_dragon, barbarians, bats, battle_ram, bomber, cannon,
+#   dart_goblin, electro_dragon, executioner, firecracker, furnace,
+#   giant_snowball, goblin_barrel, goblin_cage, goblin_drill, goblin_giant,
+#   hunter, ice_spirit, inferno_dragon, knight, lumberjack, mega_knight,
+#   minion_horde, mortar, musketeer, pekka, royal_ghost, royal_giant,
+#   royal_hogs, royal_recruits, skeleton_army, skeleton_barrel, skeletons,
+#   tesla, valkyrie, wall_breakers, witch, wizard, zap
+
+archers:
+  hp: 150
+  damage: 50
+
+baby_dragon:
+  hp: 580
+  damage: 75
+  splash_radius: 2.0
+
+barbarians:
+  hp: 360
+  damage: 90
+  count: 5
+
+bats:
+  count: 6
+  hp: 50
+
+battle_ram:
+  hp: 850
+  damage: 240
+  speed: 1.75
+
+bomber:
+  hp: 150
+  damage: 150
+  splash_radius: 2.0
+
+cannon:
+  hp: 480
+  damage: 100
+
+dart_goblin:
+  hp: 160
+  damage: 80
+  hit_speed: 0.55
+
+electro_dragon:
+  hp: 700
+  damage: 100
+  count: 1
+  splash_radius: 2.5
+
+executioner:
+  damage: 100
+  splash_radius: 2.5
+
+firecracker:
+  hp: 180
+  damage: 110
+  splash_radius: 2.0
+
+furnace:
+  hp: 600
+  lifetime: 60.0
+
+giant_snowball:
+  spell_damage: 120
+  spell_radius: 3.0
+
+goblin_barrel:
+  spell_damage: 80
+  spell_radius: 3.5
+
+goblin_cage:
+  hp: 600
+  lifetime: 45.0
+
+goblin_drill:
+  hp: 650
+  damage: 110
+  speed: 1.75
+
+goblin_giant:
+  hp: 1700
+  damage: 120
+  count: 1
+
+hunter:
+  hp: 520
+  damage: 240
+  range: 4.5
+
+ice_spirit:
+  hp: 110
+  damage: 65
+  splash_radius: 2.5
+
+inferno_dragon:
+  hp: 650
+  damage: 70
+  range: 4.0
+
+knight:
+  hp: 850
+  damage: 95
+  splash_radius: 1.0
+
+lumberjack:
+  hp: 700
+  damage: 170
+  hit_speed: 0.6
+  speed: 1.75
+
+mega_knight:
+  hp: 2300
+  damage: 180
+  splash_radius: 3.0
+
+minion_horde:
+  count: 6
+  hp: 110
+  damage: 50
+
+mortar:
+  hp: 580
+  damage: 130
+
+musketeer:
+  hp: 360
+  damage: 110
+
+pekka:
+  hp: 2500
+  damage: 450
+
+royal_ghost:
+  hp: 650
+  damage: 160
+  speed: 1.75
+
+royal_giant:
+  hp: 2000
+  damage: 140
+
+royal_hogs:
+  hp: 300
+  damage: 130
+  speed: 1.75
+
+royal_recruits:
+  hp: 240
+  damage: 85
+  count: 6
+
+skeleton_army:
+  count: 10
+  hp: 45
+  damage: 45
+
+skeleton_barrel:
+  spell_damage: 60
+  spell_radius: 3.5
+
+skeletons:
+  count: 4
+  hp: 40
+  damage: 38
+
+tesla:
+  hp: 550
+  damage: 110
+  splash_radius: 1.0
+
+valkyrie:
+  hp: 1000
+  damage: 140
+
+wall_breakers:
+  hp: 180
+  speed: 2.25
+
+witch:
+  hp: 520
+  damage: 65
+  hit_speed: 0.9
+
+wizard:
+  hp: 400
+  damage: 155
+  splash_radius: 2.0
+
+zap:
+  spell_damage: 110
+  spell_radius: 2.5

@@ -1,0 +1,28 @@
+[project]
+name = "cr-bot"
+version = "0.1.0"
+description = "Clash Royale battle simulator + self-play RL agent (simulator phase)"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+    "gymnasium>=0.29",
+    "torch>=2.2",
+    "matplotlib>=3.8",
+    "tensorboard>=2.16",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,43 @@
+# Curriculum stages. Restrictions are applied via action masking and engine flags,
+# never by reshaping obs/action spaces, so checkpoints transfer across stages.
+stages:
+  - name: one_lane
+    deck: stage0
+    opponent_deck: stage0
+    single_lane: right
+    match_time: 90.0
+    opponents: [rusher, control]   # UC-tier scripted bots only
+    selfplay: false
+    promote:
+      vs: rusher
+      win_rate: 0.80
+      matches: 200
+
+  - name: full_arena
+    deck: training_mirror
+    opponent_deck: training_mirror
+    single_lane: null
+    match_time: null
+    opponents: [rusher, control, siege, beatdown]
+    selfplay: true
+    promote:
+      vs: control
+      win_rate: 0.65
+      matches: 200
+
+  - name: full_pool
+    agent_deck_pool: ladder_top50
+    opponent_deck_pool: ladder_top50
+    single_lane: null
+    match_time: null
+    opponents: [rusher, control, siege, beatdown]
+    selfplay: true
+    promote: null
+
+  - name: focused_ladder
+    opponent_deck_pool: ladder_top50
+    single_lane: null
+    match_time: null
+    opponents: [champion]
+    selfplay: false
+    promote: null

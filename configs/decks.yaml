@@ -1,0 +1,14 @@
+# Named decks. Decks must have >= 5 cards (4-card hand + next); standard is 8.
+# Rules: max 1 hero, max 1 evolution; never include both base and _evo card.
+training_mirror: [knight, archers, goblins, giant, musketeer, minions, fireball, cannon]
+stage0: [knight, archers, goblins, giant, musketeer, fireball]
+rusher: [hog_rider, giant, goblins, skeletons_evo, minions, zap, mini_pekka, golden_knight]
+control: [knight_evo, archers, musketeer, valkyrie, fireball, zap, cannon, archer_queen]
+siege: [tesla_evo, cannon, fireball, arrows, archers, musketeer, knight, mighty_miner]
+beatdown: [giant, mini_pekka, musketeer, valkyrie, minions, fireball, skeletons_evo, skeleton_king]
+
+# Deck pools — lists of named decks sampled per training episode.
+pools:
+  stage2_pool: [training_mirror, rusher, control, siege]
+  all_archetypes: [training_mirror, rusher, control, siege, beatdown]
+  # ladder_top50 is auto-populated from configs/ladder_decks.yaml

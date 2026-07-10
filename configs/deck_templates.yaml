@@ -1,0 +1,22 @@
+# Archetype templates for procedural deck generation.
+# `required` cards are always included; `fill_from` supplies the rest to 8.
+
+rusher:
+  required: [hog_rider, zap]
+  fill_from: [giant, goblins, skeletons, minions, mini_pekka, valkyrie, fireball, archers, musketeer]
+
+control:
+  required: [cannon, fireball]
+  fill_from: [knight, archers, musketeer, valkyrie, zap, baby_dragon, mini_pekka, tesla]
+
+siege:
+  required: [tesla, cannon]
+  fill_from: [fireball, arrows, archers, musketeer, knight, skeletons, zap, valkyrie]
+
+beatdown:
+  required: [giant, mini_pekka]
+  fill_from: [musketeer, valkyrie, minions, fireball, skeletons, archers, zap, knight]
+
+training_mirror:
+  required: [knight, fireball]
+  fill_from: [archers, goblins, giant, musketeer, minions, cannon, zap, tesla]

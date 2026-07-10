@@ -1,0 +1,1376 @@
+# Full roster as of 2026-07-09 — 108 cards (plus heroes.yaml + evolutions).
+# All card stats. Single source of truth for balance — tune here, not in code.
+# Scale: roughly half of real Clash Royale values, consistent with 1400 HP princess towers.
+# Sections: Common → Rare → Epic → Legendary (log alias: the_log in load_cards).
+# speed in tiles/sec, range/radius in tiles, hit_speed/delays in seconds.
+# targets: ground | air | both | buildings_only
+
+knight:
+  type: troop
+  cost: 3
+  hp: 690
+  damage: 79
+  hit_speed: 1.1
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+archers:
+  type: troop
+  cost: 3
+  hp: 125
+  damage: 42
+  hit_speed: 1.2
+  range: 5.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 2
+  splash_radius: 0.0
+
+goblins:
+  type: troop
+  cost: 2
+  hp: 80
+  damage: 50
+  hit_speed: 1.1
+  range: 0.5
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+skeletons:
+  type: troop
+  cost: 1
+  hp: 32
+  damage: 32
+  hit_speed: 1.0
+  range: 0.5
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+giant:
+  type: troop
+  cost: 5
+  hp: 2000
+  damage: 105
+  hit_speed: 1.5
+  range: 1.0
+  sight_range: 5.5
+  speed: 0.75
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+musketeer:
+  type: troop
+  cost: 4
+  hp: 300
+  damage: 90
+  hit_speed: 1.1
+  range: 6.0
+  sight_range: 6.0
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+minions:
+  type: troop
+  cost: 3
+  hp: 95
+  damage: 40
+  hit_speed: 1.0
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.5
+  targets: both
+  flying: true
+  count: 3
+  splash_radius: 0.0
+
+baby_dragon:
+  type: troop
+  cost: 4
+  hp: 500
+  damage: 65
+  hit_speed: 1.6
+  range: 3.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 1.5
+
+mini_pekka:
+  type: troop
+  cost: 4
+  hp: 590
+  damage: 290
+  hit_speed: 1.8
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+valkyrie:
+  type: troop
+  cost: 4
+  hp: 880
+  damage: 120
+  hit_speed: 1.5
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+hog_rider:
+  type: troop
+  cost: 4
+  hp: 700
+  damage: 130
+  hit_speed: 1.6
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.75
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+fireball:
+  type: spell
+  cost: 4
+  spell_damage: 325
+  spell_radius: 2.5
+  spell_delay: 1.0
+  tower_multiplier: 0.35
+
+arrows:
+  type: spell
+  cost: 3
+  spell_damage: 120
+  spell_radius: 4.0
+  spell_delay: 0.6
+  tower_multiplier: 0.35
+
+zap:
+  type: spell
+  cost: 2
+  spell_damage: 80
+  spell_radius: 2.0
+  spell_delay: 0.1
+  tower_multiplier: 0.35
+
+cannon:
+  type: building
+  cost: 3
+  hp: 380
+  damage: 83
+  hit_speed: 0.9
+  range: 5.5
+  sight_range: 5.5
+  targets: ground
+  lifetime: 30.0
+
+tesla:
+  type: building
+  cost: 4
+  hp: 450
+  damage: 90
+  hit_speed: 1.1
+  range: 5.5
+  sight_range: 5.5
+  targets: both
+  lifetime: 35.0
+
+# --- Meta staple cards (added for ladder deck pool) ---
+
+log:
+  type: spell
+  cost: 2
+  spell_damage: 100
+  spell_radius: 3.5
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+ice_spirit:
+  type: troop
+  cost: 1
+  hp: 90
+  damage: 50
+  hit_speed: 1.0
+  range: 2.5
+  sight_range: 5.5
+  speed: 2.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+ice_golem:
+  type: troop
+  cost: 2
+  hp: 520
+  damage: 70
+  hit_speed: 1.5
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+balloon:
+  type: troop
+  cost: 5
+  hp: 1200
+  damage: 400
+  hit_speed: 3.0
+  range: 0.2
+  sight_range: 5.5
+  speed: 0.75
+  targets: buildings_only
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+miner:
+  type: troop
+  cost: 3
+  hp: 650
+  damage: 80
+  hit_speed: 1.2
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+wall_breakers:
+  type: troop
+  cost: 2
+  hp: 140
+  damage: 280
+  hit_speed: 1.0
+  range: 0.5
+  sight_range: 5.5
+  speed: 2.0
+  targets: buildings_only
+  flying: false
+  count: 2
+  splash_radius: 0.0
+
+royal_hogs:
+  type: troop
+  cost: 5
+  hp: 260
+  damage: 110
+  hit_speed: 1.6
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: buildings_only
+  flying: false
+  count: 4
+  splash_radius: 0.0
+
+royal_giant:
+  type: troop
+  cost: 6
+  hp: 1800
+  damage: 120
+  hit_speed: 1.7
+  range: 5.0
+  sight_range: 6.0
+  speed: 0.75
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+graveyard:
+  type: spell
+  cost: 5
+  spell_damage: 1
+  spell_radius: 4.0
+  spell_delay: 1.0
+  tower_multiplier: 0.0
+
+poison:
+  type: spell
+  cost: 4
+  spell_damage: 40
+  spell_radius: 3.5
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+earthquake:
+  type: spell
+  cost: 3
+  spell_damage: 120
+  spell_radius: 3.5
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+rocket:
+  type: spell
+  cost: 6
+  spell_damage: 700
+  spell_radius: 2.0
+  spell_delay: 1.0
+  tower_multiplier: 0.35
+
+tornado:
+  type: spell
+  cost: 3
+  spell_damage: 40
+  spell_radius: 5.5
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+lightning:
+  type: spell
+  cost: 6
+  spell_damage: 450
+  spell_radius: 2.0
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+freeze:
+  type: spell
+  cost: 4
+  spell_damage: 1
+  spell_radius: 3.0
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+barbarians:
+  type: troop
+  cost: 5
+  hp: 300
+  damage: 75
+  hit_speed: 1.5
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 5
+  splash_radius: 0.0
+
+bomber:
+  type: troop
+  cost: 2
+  hp: 120
+  damage: 120
+  hit_speed: 1.9
+  range: 5.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 1.5
+
+ice_wizard:
+  type: troop
+  cost: 3
+  hp: 300
+  damage: 50
+  hit_speed: 1.5
+  range: 5.5
+  sight_range: 6.0
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 1.0
+
+electro_wizard:
+  type: troop
+  cost: 4
+  hp: 300
+  damage: 80
+  hit_speed: 1.8
+  range: 5.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+wizard:
+  type: troop
+  cost: 5
+  hp: 340
+  damage: 130
+  hit_speed: 1.4
+  range: 5.5
+  sight_range: 6.0
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 1.5
+
+executioner:
+  type: troop
+  cost: 5
+  hp: 600
+  damage: 80
+  hit_speed: 2.4
+  range: 4.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+bowler:
+  type: troop
+  cost: 5
+  hp: 1200
+  damage: 120
+  hit_speed: 2.4
+  range: 4.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+lumberjack:
+  type: troop
+  cost: 4
+  hp: 600
+  damage: 140
+  hit_speed: 0.7
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+bandit:
+  type: troop
+  cost: 3
+  hp: 450
+  damage: 110
+  hit_speed: 1.0
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+pekka:
+  type: troop
+  cost: 7
+  hp: 2200
+  damage: 400
+  hit_speed: 1.8
+  range: 0.8
+  sight_range: 5.5
+  speed: 0.75
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+night_witch:
+  type: troop
+  cost: 4
+  hp: 550
+  damage: 160
+  hit_speed: 1.1
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+phoenix:
+  type: troop
+  cost: 4
+  hp: 500
+  damage: 90
+  hit_speed: 1.2
+  range: 3.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+bats:
+  type: troop
+  cost: 2
+  hp: 40
+  damage: 35
+  hit_speed: 1.1
+  range: 0.5
+  sight_range: 5.5
+  speed: 2.0
+  targets: both
+  flying: true
+  count: 5
+  splash_radius: 0.0
+
+skeleton_army:
+  type: troop
+  cost: 3
+  hp: 40
+  damage: 40
+  hit_speed: 1.0
+  range: 0.5
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 8
+  splash_radius: 0.0
+
+fisherman:
+  type: troop
+  cost: 3
+  hp: 550
+  damage: 90
+  hit_speed: 1.6
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+hunter:
+  type: troop
+  cost: 4
+  hp: 450
+  damage: 200
+  hit_speed: 2.0
+  range: 4.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+ram_rider:
+  type: troop
+  cost: 4
+  hp: 900
+  damage: 140
+  hit_speed: 1.4
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+zappies:
+  type: troop
+  cost: 4
+  hp: 120
+  damage: 45
+  hit_speed: 2.0
+  range: 4.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+firecracker:
+  type: troop
+  cost: 3
+  hp: 150
+  damage: 90
+  hit_speed: 2.5
+  range: 6.0
+  sight_range: 6.0
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 1.5
+
+mega_minion:
+  type: troop
+  cost: 3
+  hp: 400
+  damage: 100
+  hit_speed: 1.6
+  range: 1.5
+  sight_range: 5.5
+  speed: 1.25
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+goblin_gang:
+  type: troop
+  cost: 3
+  hp: 80
+  damage: 50
+  hit_speed: 1.1
+  range: 0.5
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 4
+  splash_radius: 0.0
+
+prince:
+  type: troop
+  cost: 5
+  hp: 1100
+  damage: 200
+  hit_speed: 1.4
+  range: 1.2
+  sight_range: 5.5
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+witch:
+  type: troop
+  cost: 5
+  hp: 450
+  damage: 50
+  hit_speed: 1.0
+  range: 5.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+lava_hound:
+  type: troop
+  cost: 7
+  hp: 2400
+  damage: 30
+  hit_speed: 1.3
+  range: 2.0
+  sight_range: 5.5
+  speed: 0.75
+  targets: buildings_only
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+minion_horde:
+  type: troop
+  cost: 5
+  hp: 95
+  damage: 40
+  hit_speed: 1.0
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.5
+  targets: both
+  flying: true
+  count: 6
+  splash_radius: 0.0
+
+dark_prince:
+  type: troop
+  cost: 4
+  hp: 700
+  damage: 150
+  hit_speed: 1.3
+  range: 1.2
+  sight_range: 5.5
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+golem:
+  type: troop
+  cost: 8
+  hp: 2600
+  damage: 150
+  hit_speed: 1.9
+  range: 1.0
+  sight_range: 5.5
+  speed: 0.6
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+tombstone:
+  type: building
+  cost: 3
+  hp: 260
+  damage: 1
+  hit_speed: 1.0
+  range: 0.0
+  sight_range: 5.5
+  targets: ground
+  lifetime: 40.0
+
+inferno_tower:
+  type: building
+  cost: 5
+  hp: 800
+  damage: 30
+  hit_speed: 0.4
+  range: 6.0
+  sight_range: 6.0
+  targets: both
+  lifetime: 40.0
+
+mortar:
+  type: building
+  cost: 4
+  hp: 500
+  damage: 110
+  hit_speed: 5.0
+  range: 11.0
+  sight_range: 11.0
+  targets: ground
+  lifetime: 30.0
+
+x_bow:
+  type: building
+  cost: 6
+  hp: 1000
+  damage: 20
+  hit_speed: 0.3
+  range: 11.5
+  sight_range: 11.5
+  targets: ground
+  lifetime: 40.0
+
+furnace:
+  type: building
+  cost: 4
+  hp: 500
+  damage: 1
+  hit_speed: 1.0
+  range: 0.0
+  sight_range: 5.5
+  targets: ground
+  lifetime: 50.0
+
+goblin_hut:
+  type: building
+  cost: 5
+  hp: 600
+  damage: 1
+  hit_speed: 1.0
+  range: 0.0
+  sight_range: 5.5
+  targets: ground
+  lifetime: 40.0
+
+# --- Epic / meta cards (not heroes) ---
+
+magic_archer:
+  type: troop
+  cost: 4
+  hp: 380
+  damage: 88
+  hit_speed: 1.0
+  range: 6.5
+  sight_range: 6.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+barbarian_barrel:
+  type: spell
+  cost: 2
+  spell_damage: 80
+  spell_radius: 2.0
+  spell_delay: 0.5
+  tower_multiplier: 0.35
+
+# --- Evolution base cards (March 2026 meta) ---
+
+battle_ram:
+  type: troop
+  cost: 4
+  hp: 700
+  damage: 200
+  hit_speed: 1.0
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+dart_goblin:
+  type: troop
+  cost: 3
+  hp: 130
+  damage: 65
+  hit_speed: 0.65
+  range: 6.5
+  sight_range: 6.5
+  speed: 1.5
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+electro_dragon:
+  type: troop
+  cost: 5
+  hp: 600
+  damage: 80
+  hit_speed: 1.8
+  range: 3.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 2.0
+
+giant_snowball:
+  type: spell
+  cost: 2
+  spell_damage: 80
+  spell_radius: 2.5
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+goblin_barrel:
+  type: spell
+  cost: 3
+  spell_damage: 50
+  spell_radius: 3.0
+  spell_delay: 1.0
+  tower_multiplier: 0.35
+
+goblin_cage:
+  type: building
+  cost: 4
+  hp: 500
+  damage: 1
+  hit_speed: 1.0
+  range: 0.0
+  sight_range: 5.5
+  targets: ground
+  lifetime: 35.0
+
+goblin_drill:
+  type: troop
+  cost: 4
+  hp: 550
+  damage: 90
+  hit_speed: 1.2
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+goblin_giant:
+  type: troop
+  cost: 5
+  hp: 1500
+  damage: 100
+  hit_speed: 1.5
+  range: 1.0
+  sight_range: 5.5
+  speed: 0.75
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+inferno_dragon:
+  type: troop
+  cost: 4
+  hp: 550
+  damage: 50
+  hit_speed: 0.4
+  range: 3.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+mega_knight:
+  type: troop
+  cost: 7
+  hp: 2000
+  damage: 150
+  hit_speed: 1.8
+  range: 1.0
+  sight_range: 5.5
+  speed: 0.75
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 2.5
+
+royal_ghost:
+  type: troop
+  cost: 3
+  hp: 550
+  damage: 130
+  hit_speed: 1.2
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+royal_recruits:
+  type: troop
+  cost: 7
+  hp: 200
+  damage: 70
+  hit_speed: 1.2
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 6
+  splash_radius: 0.0
+
+skeleton_barrel:
+  type: spell
+  cost: 3
+  spell_damage: 40
+  spell_radius: 3.0
+  spell_delay: 1.0
+  tower_multiplier: 0.35
+
+# --- Common (missing roster cards) ---
+
+spear_goblins:
+  type: troop
+  cost: 2
+  hp: 26
+  damage: 24
+  hit_speed: 1.3
+  range: 5.0
+  sight_range: 5.5
+  speed: 1.5
+  targets: both
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+fire_spirits:
+  type: troop
+  cost: 2
+  hp: 27
+  damage: 45
+  hit_speed: 1.0
+  range: 2.5
+  sight_range: 5.5
+  speed: 2.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+elite_barbarians:
+  type: troop
+  cost: 6
+  hp: 245
+  damage: 80
+  hit_speed: 1.4
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.5
+  targets: ground
+  flying: false
+  count: 2
+  splash_radius: 0.0
+
+guards:
+  type: troop
+  cost: 3
+  hp: 65
+  damage: 25
+  hit_speed: 1.1
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+rascals:
+  type: troop
+  cost: 5
+  hp: 200
+  damage: 55
+  hit_speed: 1.1
+  range: 5.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+goblin_machine:
+  type: troop
+  cost: 5
+  hp: 750
+  damage: 60
+  hit_speed: 1.4
+  range: 1.0
+  sight_range: 5.5
+  speed: 0.75
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 1.5
+
+heal_spirit:
+  type: troop
+  cost: 1
+  hp: 90
+  damage: 1
+  hit_speed: 1.0
+  range: 2.5
+  sight_range: 5.5
+  speed: 2.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 2.0
+
+# --- Rare (missing roster cards) ---
+
+battle_healer:
+  type: troop
+  cost: 4
+  hp: 450
+  damage: 40
+  hit_speed: 1.5
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+skeleton_dragons:
+  type: troop
+  cost: 4
+  hp: 95
+  damage: 35
+  hit_speed: 1.8
+  range: 3.5
+  sight_range: 5.5
+  speed: 1.5
+  targets: both
+  flying: true
+  count: 2
+  splash_radius: 0.0
+
+flying_machine:
+  type: troop
+  cost: 4
+  hp: 225
+  damage: 50
+  hit_speed: 1.0
+  range: 5.5
+  sight_range: 6.0
+  speed: 1.25
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+three_musketeers:
+  type: troop
+  cost: 9
+  hp: 300
+  damage: 90
+  hit_speed: 1.1
+  range: 6.0
+  sight_range: 6.0
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 3
+  splash_radius: 0.0
+
+suspicious_bush:
+  type: troop
+  cost: 2
+  hp: 250
+  damage: 80
+  hit_speed: 1.4
+  range: 0.8
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+elixir_collector:
+  type: building
+  cost: 6
+  hp: 320
+  damage: 1
+  hit_speed: 1.0
+  range: 0.0
+  sight_range: 5.5
+  targets: ground
+  lifetime: 70.0
+
+barbarian_hut:
+  type: building
+  cost: 7
+  hp: 550
+  damage: 1
+  hit_speed: 1.0
+  range: 0.0
+  sight_range: 5.5
+  targets: ground
+  lifetime: 60.0
+
+royal_delivery:
+  type: spell
+  cost: 3
+  spell_damage: 100
+  spell_radius: 2.0
+  spell_delay: 0.5
+  tower_multiplier: 0.35
+
+goblin_curse:
+  type: spell
+  cost: 2
+  spell_damage: 60
+  spell_radius: 3.0
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+# --- Epic (missing roster cards) ---
+
+giant_skeleton:
+  type: troop
+  cost: 6
+  hp: 1250
+  damage: 100
+  hit_speed: 1.5
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+cannon_cart:
+  type: troop
+  cost: 5
+  hp: 350
+  damage: 70
+  hit_speed: 1.2
+  range: 5.5
+  sight_range: 6.0
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+electro_giant:
+  type: troop
+  cost: 8
+  hp: 1700
+  damage: 60
+  hit_speed: 2.4
+  range: 1.2
+  sight_range: 5.5
+  speed: 0.6
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+elixir_golem:
+  type: troop
+  cost: 6
+  hp: 600
+  damage: 80
+  hit_speed: 1.4
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.0
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+bomb_tower:
+  type: building
+  cost: 4
+  hp: 450
+  damage: 65
+  hit_speed: 1.6
+  range: 6.0
+  sight_range: 6.0
+  targets: ground
+  lifetime: 35.0
+
+rage:
+  type: spell
+  cost: 2
+  spell_damage: 1
+  spell_radius: 5.0
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+clone:
+  type: spell
+  cost: 3
+  spell_damage: 1
+  spell_radius: 3.5
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+vines:
+  type: spell
+  cost: 3
+  spell_damage: 80
+  spell_radius: 3.0
+  spell_delay: 0.0
+  tower_multiplier: 0.35
+
+# --- Legendary (missing roster cards) ---
+
+princess:
+  type: troop
+  cost: 3
+  hp: 108
+  damage: 70
+  hit_speed: 3.0
+  range: 4.5
+  sight_range: 5.5
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+sparky:
+  type: troop
+  cost: 6
+  hp: 600
+  damage: 550
+  hit_speed: 4.0
+  range: 4.5
+  sight_range: 5.5
+  speed: 0.6
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 2.5
+
+mother_witch:
+  type: troop
+  cost: 4
+  hp: 250
+  damage: 50
+  hit_speed: 1.2
+  range: 5.5
+  sight_range: 6.0
+  speed: 1.0
+  targets: both
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+void:
+  type: troop
+  cost: 3
+  hp: 300
+  damage: 75
+  hit_speed: 1.4
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0
+
+ronin:
+  type: troop
+  cost: 4
+  hp: 550
+  damage: 75
+  hit_speed: 1.4
+  range: 1.0
+  sight_range: 5.5
+  speed: 1.25
+  targets: ground
+  flying: false
+  count: 1
+  splash_radius: 0.0

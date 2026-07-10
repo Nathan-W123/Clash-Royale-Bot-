@@ -1,0 +1,11 @@
+# Frozen benchmark opponents — never remove; permanent regression tripwire.
+benchmark:
+  opponents:
+    - bot: rusher
+      deck: rusher
+    - bot: control
+      deck: control
+    - bot: siege
+      deck: siege
+    - bot: beatdown
+      deck: beatdown

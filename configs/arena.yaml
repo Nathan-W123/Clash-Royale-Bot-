@@ -1,0 +1,38 @@
+# Arena geometry, tower stats, elixir rules, match clock.
+# Coordinates: x in [0, 18), y in [0, 32). Bottom player owns small y.
+arena:
+  width: 18
+  height: 32
+  river_y_min: 15.0      # river band [15, 17); ground units cross only on bridges
+  river_y_max: 17.0
+  bridge_xs: [3.5, 14.5] # bridge center x positions
+  bridge_half_width: 1.0
+
+towers:
+  princess:
+    hp: 1400
+    damage: 50
+    hit_speed: 0.8
+    range: 7.5
+  king:
+    hp: 2400
+    damage: 50
+    hit_speed: 1.0
+    range: 7.0
+  # Bottom-side positions; top side is mirrored (x, height - y).
+  positions:
+    princess_left: [3.5, 6.5]
+    princess_right: [14.5, 6.5]
+    king: [9.0, 2.5]
+
+elixir:
+  start: 5.0
+  max: 10.0
+  regen_interval: 2.8       # seconds per elixir in regulation
+  double_time: 120.0        # double regen from here on (and all of overtime)
+
+clock:
+  dt: 0.1                   # engine tick in seconds
+  regulation: 180.0
+  overtime: 60.0
+  tiebreaker: lowest_tower_hp  # lowest_tower_hp | draw

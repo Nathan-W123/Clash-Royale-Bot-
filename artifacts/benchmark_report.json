@@ -1,0 +1,102 @@
+{
+  "run_name": "benchmark_full_pool_60m",
+  "generated_at": "2026-07-13T23:36:14.825233+00:00",
+  "overall": {
+    "wins": 176,
+    "losses": 24,
+    "draws": 0,
+    "win_rate": 0.88,
+    "wl_ratio": 7.333333333333333,
+    "matches": 200
+  },
+  "avg_crowns_for": 1.745,
+  "avg_crowns_against": 0.575,
+  "avg_duration_sec": 180.16400000000004,
+  "card_entropy": 1.8704821156778075,
+  "card_usage": {
+    "giant": 756,
+    "goblins": 1107,
+    "archers": 934,
+    "knight": 1125,
+    "minions": 1065,
+    "cannon": 544,
+    "fireball": 33,
+    "musketeer": 172
+  },
+  "by_opponent_deck": {
+    "rusher": {
+      "wins": 36,
+      "losses": 14,
+      "draws": 0,
+      "win_rate": 0.72
+    },
+    "control": {
+      "wins": 50,
+      "losses": 0,
+      "draws": 0,
+      "win_rate": 1.0
+    },
+    "siege": {
+      "wins": 50,
+      "losses": 0,
+      "draws": 0,
+      "win_rate": 1.0
+    },
+    "beatdown": {
+      "wins": 40,
+      "losses": 10,
+      "draws": 0,
+      "win_rate": 0.8
+    }
+  },
+  "by_opponent_bot": {
+    "rusher": {
+      "wins": 36,
+      "losses": 14,
+      "draws": 0,
+      "win_rate": 0.72
+    },
+    "control": {
+      "wins": 50,
+      "losses": 0,
+      "draws": 0,
+      "win_rate": 1.0
+    },
+    "siege": {
+      "wins": 50,
+      "losses": 0,
+      "draws": 0,
+      "win_rate": 1.0
+    },
+    "beatdown": {
+      "wins": 40,
+      "losses": 10,
+      "draws": 0,
+      "win_rate": 0.8
+    }
+  },
+  "matchup_matrix": {
+    "training_mirror": {
+      "rusher": {
+        "wins": 36,
+        "losses": 14,
+        "win_rate": 0.72
+      },
+      "control": {
+        "wins": 50,
+        "losses": 0,
+        "win_rate": 1.0
+      },
+      "siege": {
+        "wins": 50,
+        "losses": 0,
+        "win_rate": 1.0
+      },
+      "beatdown": {
+        "wins": 40,
+        "losses": 10,
+        "win_rate": 0.8
+      }
+    }
+  }
+}

@@ -1,8 +1,12 @@
-__pycache__/
+﻿__pycache__/
 *.pyc
 .venv/
 checkpoints/
+!checkpoints/full_pool_60m.pt
+!checkpoints/README.md
 runs/
+!artifacts/
+!artifacts/benchmark_report.json
 *.egg-info/
 .pytest_cache/
 data/

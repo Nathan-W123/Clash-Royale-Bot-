@@ -1,0 +1,116 @@
+# Asymmetric actor-critic (#26): the POLICY stays live-play-legal while the
+# VALUE FUNCTION reads simulator ground truth.
+#
+# Training happens in a simulator where ground truth is free, so withholding
+# it from the critic buys nothing � it only makes value estimates noisier,
+# and noisy values mean noisy advantages, which is what the policy gradient
+# actually consumes. The actor still never sees privileged input, so the
+# deployed policy is unchanged; see tests/test_asymmetric_critic.py, which
+# asserts both directions of that boundary.
+#
+# Set `network.tier` to whichever tier you intend to deploy (`restricted`
+# with no vision, `human` with it) and leave `critic_tier: full`.
+ppo:
+  n_envs: 8
+  n_steps: 512            # per env per rollout -> 4096 transitions/update
+  batch_size: 1024
+  n_epochs: 4
+  lr: 3.0e-4
+  gamma: 0.997
+  gae_lambda: 0.95
+  clip_range: 0.2
+  vf_coef: 0.5
+  ent_coef_start: 0.01
+  ent_coef_end: 0.002
+  max_grad_norm: 0.5
+  total_steps: 3_000_000
+
+network:
+  # Deployed policy tier: `restricted` (no vision) or `human` (with it).
+  tier: restricted
+  # Privileged value function. Simulator-only by construction, and never
+  # reaches the policy heads — the actor's parameters see it solely through
+  # the advantage signal.
+  critic_tier: full
+  card_embed_dim: 16
+  hand_mlp: 64
+  fusion_mlp: 256
+
+reward:
+  # Potential-based shaping (#28): provably policy-invariant, so unlike the
+  # `events` mode it does not need to anneal to zero and can keep supplying
+  # gradient for the whole run. phi = normalized tower-HP advantage.
+  mode: potential
+  terminal: 1.0
+  potential_scale: 0.5    # keep below `terminal`: bias the search, don't out-vote winning
+  # gamma defaults to ppo.gamma above; they MUST agree or the telescoping
+  # identity (and the invariance guarantee) breaks.
+
+  # Unused in `potential` mode; kept so switching back to `events` is a
+  # one-line change rather than an archaeology exercise.
+  tower_damage: 0.3       # per 1400 HP of damage differential
+  tower_fall: 0.15
+  elixir_trade: 0.02      # per point of elixir-value trade delta
+  leak: 0.005             # per point of leaked elixir (regen attempted at cap)
+  anneal_start: 1.0
+  anneal_end: 0.0
+  anneal_over_steps: 2_000_000
+
+league:
+  # Main-exploiter agents (#29). PFSP only resamples opponents the main agent
+  # already produced, so a weakness no ancestor happened to punish stays
+  # invisible. An exploiter is trained solely against a frozen copy of the
+  # *current* main agent, so it can find and overfit to exactly that hole,
+  # then retires into the pool as permanent pressure.
+  #
+  # Off by default: exploiter compute comes straight out of the main agent's
+  # budget, so it is only worth enabling on a long run.
+  exploiter:
+    enabled: false
+    every_steps: 1_000_000
+    train_steps: 200_000
+    ent_coef_scale: 2.0     # hotter: search for an odd line that works
+
+  snapshot_every: 100_000
+  pool_max: 20
+  anchor_every: 500_000
+  sample_latest: 0.20
+  sample_pool: 0.65       # PFSP-weighted over pool
+  sample_scripted: 0.15
+  refresh_every: 10_000
+
+# Opponent selection for training episodes.
+# skill_tier: ultimate_champion uses champion heuristics (reactive defense,
+# elixir discipline, archetype offense) instead of random placement.
+opponents:
+  skill_tier: ultimate_champion
+  agent_deck_pool: ladder_top50
+  opponent_deck_pool: ladder_top50
+  weakness_weight: 0.35   # upweight decks the agent loses to
+  scripted_bots: [rusher, control, siege, beatdown]
+
+# Focused rotation: beat one ladder deck X times, then rotate through all.
+focused_rotation:
+  wins_per_deck: 5
+  target_win_rate: 0.65
+  min_matches_per_deck: 10
+  min_win_rate_per_deck: 0.55
+
+# Adaptive agent deck: rebuild from per-card scores.
+adaptive_deck:
+  rebuild_every_matches: 25
+  plateau_window: 20
+  plateau_threshold: 0.02
+
+eval:
+  every_steps: 100_000
+  matches_per_opponent: 100
+  regression_tolerance: 0.05
+
+bc:
+  rollout_matches: 200     # scripted round-robin matches for the BC dataset
+  dagger_rounds: 1
+  dagger_matches: 100
+  epochs: 5
+  lr: 1.0e-3
+  batch_size: 512

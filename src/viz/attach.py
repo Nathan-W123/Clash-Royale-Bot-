@@ -87,13 +87,20 @@ def emit_stats(scope: str, metrics: dict) -> None:
 
 
 def start_server(port: int | None, host: str = "127.0.0.1", *,
-                 mode_note: str = "attached to this process") -> None:
-    """Boot the viewer inside the current process, if a port was requested."""
+                 mode_note: str = "attached to this process",
+                 activity: str = "training") -> None:
+    """Boot the viewer inside the current process, if a port was requested.
+
+    `activity` is what this process is doing (`training` or `live`). The mode
+    is always `"attached"` here, so without it the UI cannot tell the two
+    apart — see `VizController.state`.
+    """
     if not port:
         return
     from src.viz.server import VizController, serve
     from src.viz.sources import AttachedSource
 
-    controller = VizController({"attached": AttachedSource("viz", mode_note)})
+    controller = VizController(
+        {"attached": AttachedSource("viz", mode_note, activity=activity)})
     controller.set_mode("attached")
     serve(port=port, host=host, controller=controller, block=False)

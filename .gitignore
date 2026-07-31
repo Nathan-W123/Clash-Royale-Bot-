@@ -15,3 +15,6 @@ data/
 # configs/live_play.example.yaml; the coordinates only mean anything on the
 # display they were measured on.
 configs/live_play.yaml
+
+# Training stdout captured by nohup; the real metrics live in runs/<name>/.
+runs_*.log

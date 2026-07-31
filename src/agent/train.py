@@ -657,7 +657,8 @@ def main() -> None:
     args = parser.parse_args()
 
     viz.start_server(args.viz_port, args.viz_host,
-                     mode_note=f"streaming from training run {args.run!r}")
+                     mode_note=f"streaming from training run {args.run!r}",
+                     activity="training")
 
     # These nets are small and the batches are narrow, so intra-op threading
     # costs more in synchronization than it recovers in arithmetic. Measured

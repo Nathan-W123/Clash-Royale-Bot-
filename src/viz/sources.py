@@ -315,9 +315,12 @@ class AttachedSource:
     needs to exist so the UI can select it.
     """
 
-    def __init__(self, name: str, note: str) -> None:
+    def __init__(self, name: str, note: str, activity: str = "training") -> None:
         self.name = name
         self.note = note
+        # What the host process is doing, so the UI can distinguish a
+        # training run from live play — both arrive as mode "attached".
+        self.activity = activity
 
     def start(self) -> None:
         telemetry.log(f"[{self.name}] {self.note}", "good")

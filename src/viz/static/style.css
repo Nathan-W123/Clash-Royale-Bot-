@@ -205,3 +205,42 @@ button.active {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(120, 155, 220, 0.22); border-radius: 5px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(120, 155, 220, 0.4); }
+
+/* ---------------------------------------------------------- mode banner */
+
+/* Sits above the network, centred, out of the way of the top-left brand and
+   top-right mode buttons. `pointer-events: none` so it never intercepts a
+   drag on the canvas behind it. */
+#mode-banner {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font: 500 15px/1 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* The canvas behind is dark but not uniformly so; a soft shadow keeps the
+     text legible over a bright cluster of nodes without a solid panel. */
+  text-shadow: 0 0 12px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0;
+  z-index: 5;
+}
+
+#mode-banner.on {
+  animation: banner-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes banner-pulse {
+  0%   { opacity: 0.15; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.15; }
+}
+
+/* Respect a reduced-motion preference: keep the label, drop the pulsing.
+   A looping fade is exactly the kind of motion this setting exists for. */
+@media (prefers-reduced-motion: reduce) {
+  #mode-banner.on { animation: none; opacity: 0.9; }
+}

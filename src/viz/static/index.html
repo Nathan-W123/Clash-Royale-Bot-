@@ -23,6 +23,11 @@
       </div>
     </header>
 
+    <!-- Mode banner: pulses over the network while a source is running,
+         hidden when paused. aria-live so the state is announced rather than
+         only shown, since the cue is otherwise purely visual. -->
+    <div id="mode-banner" aria-live="polite"></div>
+
     <aside id="hud-stats" class="panel">
       <div class="panel-title">telemetry</div>
       <dl id="stats-list"></dl>

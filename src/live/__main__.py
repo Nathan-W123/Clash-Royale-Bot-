@@ -72,7 +72,8 @@ def main() -> None:
     if args.viz_port:
         viz.start_server(args.viz_port, args.viz_host,
                          mode_note=f"streaming from live bridge "
-                                   f"({'armed' if args.armed else 'observing'})")
+                                   f"({'armed' if args.armed else 'observing'})",
+                         activity="live")
         log = telemetry.TeeLogger()
 
     driver = _build_driver(config, args.checkpoint, log)

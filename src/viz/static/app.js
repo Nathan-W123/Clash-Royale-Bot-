@@ -610,7 +610,7 @@ function handle(msg) {
       break;
 
     case 'mode':
-      setModeUI(msg.mode);
+      setModeUI(msg.mode, msg.activity);
       break;
   }
   if (msg.dropped) {
@@ -621,11 +621,31 @@ function handle(msg) {
 
 /* ------------------------------------------------------------------ modes */
 
-function setModeUI(mode) {
+/* Label shown over the network per mode. `idle` maps to no banner rather
+   than a "Paused" one: the pulsing is meant to signal that something is
+   still happening, so showing it while stopped would say the opposite. */
+const BANNER_TEXT = {
+  training: 'Training in progress…',
+  live: 'Live…',
+};
+
+function setModeUI(mode, activity) {
   S.mode = mode;
   for (const b of document.querySelectorAll('button.mode')) {
     b.classList.toggle('active', b.dataset.mode === mode);
   }
+  // Prefer `activity` over `mode`: when the viewer rides along inside
+  // train.py or src.live the mode is always "attached", which cannot tell
+  // training from live play. Falls back to `mode` for the standalone viewer.
+  setBanner(activity || mode);
+}
+
+function setBanner(activity) {
+  const banner = document.getElementById('mode-banner');
+  if (!banner) return;
+  const text = BANNER_TEXT[activity] || '';
+  banner.textContent = text;
+  banner.classList.toggle('on', Boolean(text));
 }
 
 for (const b of document.querySelectorAll('button.mode')) {
@@ -635,7 +655,7 @@ for (const b of document.querySelectorAll('button.mode')) {
       const res = await fetch('/api/mode?m=' + encodeURIComponent(mode));
       const body = await res.json();
       if (!body.ok) appendLog('[viz] ' + (body.error || 'mode change failed'), 'error');
-      else setModeUI(body.mode);
+      else setModeUI(body.mode, body.activity);
     } catch (err) {
       appendLog('[viz] ' + err, 'error');
     }
@@ -740,5 +760,6 @@ gl.enable(gl.DEPTH_TEST);
 gl.depthFunc(gl.LEQUAL);
 appendLog('[viz] viewer ready — waiting for a graph…', 'good');
 connect();
-fetch('/api/state').then((r) => r.json()).then((s) => setModeUI(s.mode)).catch(() => {});
+fetch('/api/state').then((r) => r.json())
+  .then((s) => setModeUI(s.mode, s.activity)).catch(() => {});
 requestAnimationFrame(render);

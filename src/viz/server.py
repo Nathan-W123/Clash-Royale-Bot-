@@ -70,7 +70,7 @@ class VizHandler(BaseHTTPRequestHandler):
         except ValueError as error:
             self._serve_json({"ok": False, "error": str(error)}, 400)
             return
-        self._serve_json({"ok": True, "mode": self.controller.mode})
+        self._serve_json({"ok": True, **self.controller.state()})
 
     def _serve_events(self) -> None:
         sub_id, sub, backlog = telemetry.subscribe()
@@ -148,11 +148,21 @@ class VizController:
             if mode != "idle":
                 self._active = self.sources[mode]
                 self._active.start()
-        telemetry.emit("mode", {"mode": self.mode,
-                                "available": sorted(self.sources)})
+        telemetry.emit("mode", self.state())
 
     def state(self) -> dict:
-        return {"mode": self.mode, "available": sorted(self.sources),
+        """Current mode plus what the running source is *doing*.
+
+        `mode` alone is not enough for the UI: when the viewer rides along
+        inside another process the mode is always `"attached"`, which says
+        that something is streaming but not whether it is training or playing
+        live. `activity` resolves to `training` / `live` / `idle` in both the
+        standalone and attached cases, so the front end has one field to read.
+        """
+        active = self.sources.get(self.mode)
+        activity = getattr(active, "activity", None) or self.mode
+        return {"mode": self.mode, "activity": activity,
+                "available": sorted(self.sources),
                 "viewers": telemetry.subscriber_count()}
 
     def shutdown(self) -> None:

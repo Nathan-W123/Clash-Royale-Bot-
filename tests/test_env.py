@@ -3,10 +3,11 @@ import numpy as np
 
 from src.bots.registry import get_bot
 from src.decks.catalog import DeckCatalog
+from src.agent.obs_layout import RESTRICTED_SCALAR_DIM
 from src.simulator.constants import Side
 from src.simulator.env import N_CARD_CHOICES, N_CELLS, CRBattleEnv
 from src.agent.selfplay import BotOpponent
-def _make_env(cards, arena):
+def _make_env(cards, arena, **kwargs):
     deck = [cards[n] for n in ["knight", "archers", "goblins", "giant",
                                "musketeer", "minions", "fireball", "cannon"]]
     catalog = DeckCatalog()
@@ -14,7 +15,7 @@ def _make_env(cards, arena):
                   rng=np.random.default_rng(0))
     return CRBattleEnv(
         cards, arena, deck, list(deck),
-        opponent=BotOpponent(bot), seed=1,
+        opponent=BotOpponent(bot), seed=1, **kwargs,
     )
 
 
@@ -57,3 +58,11 @@ def test_episode_terminates_with_metrics(cards, arena):
     assert info["episode_metrics"]["result"] in {
         "BOTTOM_WIN", "TOP_WIN", "DRAW",
     }
+
+
+def test_restricted_obs_vector_shape(cards, arena):
+    env = _make_env(cards, arena, use_spatial=False)
+    assert env.observation_space["vector"].shape == (RESTRICTED_SCALAR_DIM,)
+    obs, info = env.reset(seed=0)
+    assert obs["vector"].shape == (RESTRICTED_SCALAR_DIM,)
+    assert not obs["spatial"].any()

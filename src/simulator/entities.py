@@ -25,9 +25,18 @@ class Unit:
     radius: float = UNIT_RADIUS
     ability_charge: float = 0.0   # 0–1 progress toward next hero ability
     damage_multiplier: float = 1.0
-    buff_until: float = 0.0       # sim time when damage buff expires
+    buff_until: float = 0.0       # sim time when damage/speed buff expires
     shield_hp: float = 0.0        # temporary HP buffer from shield ability
     shield_until: float = 0.0     # sim time when shield expires
+    speed_multiplier: float = 1.0
+    frozen_until: float = 0.0     # sim time when a freeze/stun effect expires
+    deployed_at: float = 0.0      # sim time this unit was spawned
+    # Charge/ramp state (#36). Both are "wind-ups" that a stun resets, which
+    # is the mechanic behind zapping a Sparky or an Inferno Tower.
+    charge_progress: float = 0.0  # tiles moved unimpeded toward a target
+    charged: bool = False         # charge complete; next hit is the charged one
+    ramp_time: float = 0.0        # seconds locked onto `ramp_target_id`
+    ramp_target_id: int | None = None
 
     @property
     def is_building(self) -> bool:
@@ -61,7 +70,7 @@ class Tower:
     stats: TowerStats
     cooldown: float = 0.0
     target_id: int | None = None
-    activated: bool = True        # king starts False until triggered
+    activated: bool = False       # king starts False until triggered; always set explicitly at construction
     radius: float = TOWER_RADIUS
 
     @property
@@ -79,3 +88,5 @@ class PendingSpell:
     tower_multiplier: float
     resolve_at: float             # sim time
     card_name: str
+    ticks_left: int = 0           # remaining applications (0 = one-shot spell)
+    zone_until: float = 0.0       # rage: sim time the buff zone ends (0 = unset)

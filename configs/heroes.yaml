@@ -27,6 +27,9 @@ golden_knight:
   flying: false
   count: 1
   splash_radius: 0.0
+  # Champions land slower than a standard troop. Approximate — verify against
+  # the real card and tune here (see cards.yaml header on deploy_time).
+  deploy_time: 1.5
   ability: dash
   ability_charge: 22.0
   ability_damage: 220

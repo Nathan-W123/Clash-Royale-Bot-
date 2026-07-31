@@ -1,0 +1,1223 @@
+{
+ "_note": "Level-1 base values. Troop scaling is uniform per level, so these preserve every breakpoint.",
+ "_source": "https://royaleapi.github.io/cr-api-data/json/cards_stats.json",
+ "cards": {
+  "archer_queen": {
+   "count": 1,
+   "damage": 225.0,
+   "hit_speed": 1.2,
+   "hp": 1000.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "archers": {
+   "count": 2,
+   "damage": 42.0,
+   "hit_speed": 0.9,
+   "hp": 119.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "arrows": {
+   "kind": "spell",
+   "spell_damage": 48.0,
+   "spell_radius": 1.4,
+   "tower_multiplier": 0.3
+  },
+  "baby_dragon": {
+   "count": 1,
+   "damage": 100.0,
+   "hit_speed": 1.5,
+   "hp": 720.0,
+   "kind": "unit",
+   "range": 3.5,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "balloon": {
+   "count": 1,
+   "damage": 400.0,
+   "hit_speed": 2.0,
+   "hp": 1050.0,
+   "kind": "unit",
+   "range": 0.1,
+   "sight_range": 7.7,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "bandit": {
+   "count": 1,
+   "damage": 160.0,
+   "hit_speed": 1.0,
+   "hp": 750.0,
+   "kind": "unit",
+   "range": 0.75,
+   "sight_range": 6.0,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "barbarian_barrel": {
+   "kind": "spell",
+   "spell_damage": 151.0,
+   "spell_radius": 0.0,
+   "tower_multiplier": 1.0
+  },
+  "barbarian_hut": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 10.0,
+   "hp": 550.0,
+   "kind": "unit",
+   "range": 0.0,
+   "sight_range": 0.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "barbarians": {
+   "count": 5,
+   "damage": 75.0,
+   "hit_speed": 1.3,
+   "hp": 262.0,
+   "kind": "unit",
+   "range": 0.7,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "bats": {
+   "count": 5,
+   "damage": 32.0,
+   "hit_speed": 1.3,
+   "hp": 32.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "battle_healer": {
+   "count": 1,
+   "damage": 70.0,
+   "hit_speed": 1.5,
+   "hp": 810.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "battle_ram": {
+   "count": 1,
+   "damage": 135.0,
+   "hit_speed": 0.4,
+   "hp": 456.0,
+   "kind": "unit",
+   "range": 0.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "bomb_tower": {
+   "count": 1,
+   "damage": 105.0,
+   "hit_speed": 1.6,
+   "hp": 640.0,
+   "kind": "unit",
+   "range": 6.0,
+   "sight_range": 6.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "bomber": {
+   "count": 1,
+   "damage": 87.0,
+   "hit_speed": 1.8,
+   "hp": 130.0,
+   "kind": "unit",
+   "range": 4.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "bowler": {
+   "count": 1,
+   "damage": 180.0,
+   "hit_speed": 2.5,
+   "hp": 1300.0,
+   "kind": "unit",
+   "range": 4.0,
+   "sight_range": 5.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "cannon": {
+   "count": 1,
+   "damage": 83.0,
+   "hit_speed": 0.9,
+   "hp": 322.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "cannon_cart": {
+   "count": 1,
+   "damage": 133.0,
+   "hit_speed": 1.0,
+   "hp": 558.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 6.0,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "clone": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 3.0,
+   "tower_multiplier": 1.0
+  },
+  "dark_prince": {
+   "count": 1,
+   "damage": 155.0,
+   "hit_speed": 1.3,
+   "hp": 750.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 1.1
+  },
+  "dart_goblin": {
+   "count": 1,
+   "damage": 62.0,
+   "hit_speed": 0.7,
+   "hp": 123.0,
+   "kind": "unit",
+   "range": 6.5,
+   "sight_range": 7.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "earthquake": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 3.5,
+   "tower_multiplier": 1.0
+  },
+  "electro_dragon": {
+   "count": 1,
+   "damage": 120.0,
+   "hit_speed": 2.1,
+   "hp": 594.0,
+   "kind": "unit",
+   "range": 3.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "electro_giant": {
+   "count": 1,
+   "damage": 102.0,
+   "hit_speed": 2.1,
+   "hp": 2410.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 7.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "electro_spirit": {
+   "count": 1,
+   "damage": 39.0,
+   "hit_speed": 0.3,
+   "hp": 90.0,
+   "kind": "unit",
+   "range": 2.5,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "electro_wizard": {
+   "count": 1,
+   "damage": 91.0,
+   "hit_speed": 1.8,
+   "hp": 590.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "elite_barbarians": {
+   "count": 2,
+   "damage": 150.0,
+   "hit_speed": 1.4,
+   "hp": 524.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 6.0,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "elixir_golem": {
+   "count": 1,
+   "damage": 120.0,
+   "hit_speed": 1.1,
+   "hp": 740.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 7.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "executioner": {
+   "count": 1,
+   "damage": 106.0,
+   "hit_speed": 0.9,
+   "hp": 800.0,
+   "kind": "unit",
+   "range": 4.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "fire_spirit": {
+   "count": 1,
+   "damage": 81.0,
+   "hit_speed": 0.3,
+   "hp": 90.0,
+   "kind": "unit",
+   "range": 2.0,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "fire_spirits": {
+   "kind": "spell",
+   "spell_damage": 81.0,
+   "spell_radius": 2.3,
+   "tower_multiplier": 1.0
+  },
+  "fireball": {
+   "kind": "spell",
+   "spell_damage": 325.0,
+   "spell_radius": 2.5,
+   "tower_multiplier": 0.3
+  },
+  "firecracker": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 3.0,
+   "hp": 119.0,
+   "kind": "unit",
+   "range": 6.0,
+   "sight_range": 8.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "fisherman": {
+   "count": 1,
+   "damage": 160.0,
+   "hit_speed": 1.3,
+   "hp": 720.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 7.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "flying_machine": {
+   "count": 1,
+   "damage": 81.0,
+   "hit_speed": 1.1,
+   "hp": 290.0,
+   "kind": "unit",
+   "range": 6.0,
+   "sight_range": 6.0,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "freeze": {
+   "kind": "spell",
+   "spell_damage": 72.0,
+   "spell_radius": 3.0,
+   "tower_multiplier": 0.3
+  },
+  "furnace": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 6.0,
+   "hp": 400.0,
+   "kind": "unit",
+   "range": 0.0,
+   "sight_range": 0.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "giant": {
+   "count": 1,
+   "damage": 120.0,
+   "hit_speed": 1.5,
+   "hp": 1930.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 7.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "giant_skeleton": {
+   "count": 1,
+   "damage": 167.0,
+   "hit_speed": 1.4,
+   "hp": 2140.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 5.0,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "giant_snowball": {
+   "kind": "spell",
+   "spell_damage": 75.0,
+   "spell_radius": 2.5,
+   "tower_multiplier": 0.3
+  },
+  "goblin_barrel": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 1.5,
+   "tower_multiplier": 1.0
+  },
+  "goblin_cage": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 10.0,
+   "hp": 350.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 20.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "goblin_drill": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 1.1,
+   "hp": 900.0,
+   "kind": "unit",
+   "range": 2.0,
+   "sight_range": 2.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "goblin_gang": {
+   "count": 3,
+   "damage": 47.0,
+   "hit_speed": 1.1,
+   "hp": 79.0,
+   "kind": "unit",
+   "range": 0.5,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "goblin_giant": {
+   "count": 1,
+   "damage": 110.0,
+   "hit_speed": 1.5,
+   "hp": 2085.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 7.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "goblin_hut": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 10.0,
+   "hp": 400.0,
+   "kind": "unit",
+   "range": 0.0,
+   "sight_range": 0.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "goblins": {
+   "count": 4,
+   "damage": 47.0,
+   "hit_speed": 1.1,
+   "hp": 79.0,
+   "kind": "unit",
+   "range": 0.5,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "golden_knight": {
+   "count": 1,
+   "damage": 160.0,
+   "hit_speed": 0.9,
+   "hp": 1800.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "golem": {
+   "count": 1,
+   "damage": 195.0,
+   "hit_speed": 2.5,
+   "hp": 3200.0,
+   "kind": "unit",
+   "range": 0.75,
+   "sight_range": 7.0,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "graveyard": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 4.0,
+   "tower_multiplier": 1.0
+  },
+  "guards": {
+   "count": 3,
+   "damage": 76.0,
+   "hit_speed": 1.0,
+   "hp": 51.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "heal_spirit": {
+   "kind": "spell",
+   "spell_damage": 52.0,
+   "spell_radius": 1.5,
+   "tower_multiplier": 1.0
+  },
+  "hog_rider": {
+   "count": 1,
+   "damage": 150.0,
+   "hit_speed": 1.6,
+   "hp": 800.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 9.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "hunter": {
+   "count": 1,
+   "damage": 53.0,
+   "hit_speed": 2.2,
+   "hp": 524.0,
+   "kind": "unit",
+   "range": 4.0,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.07
+  },
+  "ice_golem": {
+   "count": 1,
+   "damage": 40.0,
+   "hit_speed": 2.5,
+   "hp": 565.0,
+   "kind": "unit",
+   "range": 0.75,
+   "sight_range": 7.0,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "ice_spirit": {
+   "count": 1,
+   "damage": 43.0,
+   "hit_speed": 0.3,
+   "hp": 90.0,
+   "kind": "unit",
+   "range": 2.5,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "ice_wizard": {
+   "count": 1,
+   "damage": 75.0,
+   "hit_speed": 1.7,
+   "hp": 569.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "inferno_dragon": {
+   "count": 1,
+   "damage": 30.0,
+   "hit_speed": 0.4,
+   "hp": 1070.0,
+   "kind": "unit",
+   "range": 3.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "inferno_tower": {
+   "count": 1,
+   "damage": 20.0,
+   "hit_speed": 0.4,
+   "hp": 825.0,
+   "kind": "unit",
+   "range": 6.0,
+   "sight_range": 6.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "knight": {
+   "count": 1,
+   "damage": 79.0,
+   "hit_speed": 1.2,
+   "hp": 690.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "lava_hound": {
+   "count": 1,
+   "damage": 45.0,
+   "hit_speed": 1.3,
+   "hp": 3150.0,
+   "kind": "unit",
+   "range": 3.5,
+   "sight_range": 5.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "lightning": {
+   "kind": "spell",
+   "spell_damage": 660.0,
+   "spell_radius": 3.5,
+   "tower_multiplier": 1.0
+  },
+  "log": {
+   "kind": "spell",
+   "spell_damage": 240.0,
+   "spell_radius": 0.0,
+   "tower_multiplier": 0.2
+  },
+  "lumberjack": {
+   "count": 1,
+   "damage": 200.0,
+   "hit_speed": 0.8,
+   "hp": 1060.0,
+   "kind": "unit",
+   "range": 0.7,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "magic_archer": {
+   "count": 1,
+   "damage": 111.0,
+   "hit_speed": 1.1,
+   "hp": 440.0,
+   "kind": "unit",
+   "range": 7.0,
+   "sight_range": 7.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "mega_knight": {
+   "count": 1,
+   "damage": 222.0,
+   "hit_speed": 1.7,
+   "hp": 3300.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 1.3
+  },
+  "mega_minion": {
+   "count": 1,
+   "damage": 147.0,
+   "hit_speed": 1.5,
+   "hp": 395.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "mighty_miner": {
+   "count": 1,
+   "damage": 40.0,
+   "hit_speed": 0.4,
+   "hp": 2250.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "miner": {
+   "count": 1,
+   "damage": 160.0,
+   "hit_speed": 1.2,
+   "hp": 1000.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "mini_pekka": {
+   "count": 1,
+   "damage": 340.0,
+   "hit_speed": 1.6,
+   "hp": 642.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "minion_horde": {
+   "count": 6,
+   "damage": 46.0,
+   "hit_speed": 1.0,
+   "hp": 90.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "minions": {
+   "count": 3,
+   "damage": 46.0,
+   "hit_speed": 1.0,
+   "hp": 90.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "monk": {
+   "count": 1,
+   "damage": 140.0,
+   "hit_speed": 0.8,
+   "hp": 2000.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "mortar": {
+   "count": 1,
+   "damage": 104.0,
+   "hit_speed": 5.0,
+   "hp": 535.0,
+   "kind": "unit",
+   "range": 11.5,
+   "sight_range": 11.5,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "mother_witch": {
+   "count": 1,
+   "damage": 110.0,
+   "hit_speed": 1.0,
+   "hp": 440.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "musketeer": {
+   "count": 1,
+   "damage": 103.0,
+   "hit_speed": 1.0,
+   "hp": 340.0,
+   "kind": "unit",
+   "range": 6.0,
+   "sight_range": 6.0,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "night_witch": {
+   "count": 1,
+   "damage": 260.0,
+   "hit_speed": 1.3,
+   "hp": 750.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "party_hut": {
+   "count": 1,
+   "damage": 109.0,
+   "hit_speed": 0.7,
+   "hp": 704.0,
+   "kind": "unit",
+   "range": 11.0,
+   "sight_range": 11.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "pekka": {
+   "count": 1,
+   "damage": 510.0,
+   "hit_speed": 1.8,
+   "hp": 2350.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.0,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "phoenix": {
+   "count": 1,
+   "damage": 180.0,
+   "hit_speed": 1.0,
+   "hp": 870.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "poison": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 3.5,
+   "tower_multiplier": 1.0
+  },
+  "prince": {
+   "count": 1,
+   "damage": 245.0,
+   "hit_speed": 1.4,
+   "hp": 1200.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "princess": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 3.0,
+   "hp": 216.0,
+   "kind": "unit",
+   "range": 9.0,
+   "sight_range": 9.5,
+   "speed": 1.0,
+   "splash_radius": 2.5
+  },
+  "rage": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 3.0,
+   "tower_multiplier": 1.0
+  },
+  "raging_prince": {
+   "count": 1,
+   "damage": 245.0,
+   "hit_speed": 1.4,
+   "hp": 1440.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "ram_rider": {
+   "count": 1,
+   "damage": 220.0,
+   "hit_speed": 1.8,
+   "hp": 1461.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 7.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "rascals": {
+   "count": 1,
+   "damage": 52.0,
+   "hit_speed": 1.5,
+   "hp": 758.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "rocket": {
+   "kind": "spell",
+   "spell_damage": 700.0,
+   "spell_radius": 2.0,
+   "tower_multiplier": 0.25
+  },
+  "royal_delivery": {
+   "kind": "spell",
+   "spell_damage": 171.0,
+   "spell_radius": 3.0,
+   "tower_multiplier": 1.0
+  },
+  "royal_ghost": {
+   "count": 1,
+   "damage": 216.0,
+   "hit_speed": 1.8,
+   "hp": 1000.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 1.0
+  },
+  "royal_giant": {
+   "count": 1,
+   "damage": 120.0,
+   "hit_speed": 1.7,
+   "hp": 1200.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 7.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "royal_hogs": {
+   "count": 4,
+   "damage": 35.0,
+   "hit_speed": 1.2,
+   "hp": 395.0,
+   "kind": "unit",
+   "range": 0.75,
+   "sight_range": 9.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "royal_recruits": {
+   "count": 6,
+   "damage": 52.0,
+   "hit_speed": 1.3,
+   "hp": 208.0,
+   "kind": "unit",
+   "range": 1.6,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "santa_hog_rider": {
+   "count": 1,
+   "damage": 265.0,
+   "hit_speed": 1.6,
+   "hp": 1400.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 9.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "skeleton_army": {
+   "count": 15,
+   "damage": 32.0,
+   "hit_speed": 1.0,
+   "hp": 32.0,
+   "kind": "unit",
+   "range": 0.5,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "skeleton_barrel": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 0.3,
+   "hp": 208.0,
+   "kind": "unit",
+   "range": 0.35,
+   "sight_range": 7.7,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "skeleton_dragons": {
+   "count": 2,
+   "damage": 63.0,
+   "hit_speed": 1.9,
+   "hp": 220.0,
+   "kind": "unit",
+   "range": 3.5,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "skeleton_king": {
+   "count": 1,
+   "damage": 205.0,
+   "hit_speed": 1.6,
+   "hp": 2300.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 1.3
+  },
+  "skeletons": {
+   "count": 3,
+   "damage": 32.0,
+   "hit_speed": 1.0,
+   "hp": 32.0,
+   "kind": "unit",
+   "range": 0.5,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "sparky": {
+   "count": 1,
+   "damage": 1100.0,
+   "hit_speed": 4.0,
+   "hp": 1200.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 5.0,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "spear_goblins": {
+   "count": 3,
+   "damage": 32.0,
+   "hit_speed": 1.7,
+   "hp": 52.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "super_archers": {
+   "count": 2,
+   "damage": 0.0,
+   "hit_speed": 2.0,
+   "hp": 580.0,
+   "kind": "unit",
+   "range": 5.0,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "super_ice_golem": {
+   "count": 1,
+   "damage": 100.0,
+   "hit_speed": 2.5,
+   "hp": 3000.0,
+   "kind": "unit",
+   "range": 0.75,
+   "sight_range": 7.0,
+   "speed": 0.5,
+   "splash_radius": 0.0
+  },
+  "super_lava_hound": {
+   "count": 1,
+   "damage": 45.0,
+   "hit_speed": 1.3,
+   "hp": 2800.0,
+   "kind": "unit",
+   "range": 3.5,
+   "sight_range": 5.5,
+   "speed": 0.75,
+   "splash_radius": 0.0
+  },
+  "super_magic_archer": {
+   "count": 1,
+   "damage": 1.0,
+   "hit_speed": 2.0,
+   "hp": 580.0,
+   "kind": "unit",
+   "range": 7.0,
+   "sight_range": 7.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "super_mini_pekka": {
+   "count": 1,
+   "damage": 99999.0,
+   "hit_speed": 1.6,
+   "hp": 1300.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 5.5,
+   "speed": 1.5,
+   "splash_radius": 0.0
+  },
+  "super_witch": {
+   "count": 1,
+   "damage": 110.0,
+   "hit_speed": 1.1,
+   "hp": 880.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "terry": {
+   "count": 1,
+   "damage": 350.0,
+   "hit_speed": 1.6,
+   "hp": 2300.0,
+   "kind": "unit",
+   "range": 0.8,
+   "sight_range": 9.5,
+   "speed": 2.0,
+   "splash_radius": 0.0
+  },
+  "tesla": {
+   "count": 1,
+   "damage": 90.0,
+   "hit_speed": 1.1,
+   "hp": 450.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "three_musketeers": {
+   "count": 3,
+   "damage": 103.0,
+   "hit_speed": 1.0,
+   "hp": 340.0,
+   "kind": "unit",
+   "range": 6.0,
+   "sight_range": 6.0,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "tombstone": {
+   "count": 1,
+   "damage": 0.0,
+   "hit_speed": 10.0,
+   "hp": 250.0,
+   "kind": "unit",
+   "range": 0.0,
+   "sight_range": 0.0,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "tornado": {
+   "kind": "spell",
+   "spell_damage": 0.0,
+   "spell_radius": 5.5,
+   "tower_multiplier": 1.0
+  },
+  "valkyrie": {
+   "count": 1,
+   "damage": 126.0,
+   "hit_speed": 1.5,
+   "hp": 900.0,
+   "kind": "unit",
+   "range": 1.2,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 2.0
+  },
+  "wall_breakers": {
+   "count": 2,
+   "damage": 245.0,
+   "hit_speed": 1.2,
+   "hp": 207.0,
+   "kind": "unit",
+   "range": 0.5,
+   "sight_range": 7.0,
+   "speed": 2.0,
+   "splash_radius": 1.5
+  },
+  "witch": {
+   "count": 1,
+   "damage": 84.0,
+   "hit_speed": 1.1,
+   "hp": 524.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "wizard": {
+   "count": 1,
+   "damage": 133.0,
+   "hit_speed": 1.4,
+   "hp": 340.0,
+   "kind": "unit",
+   "range": 5.5,
+   "sight_range": 5.5,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  },
+  "x_bow": {
+   "count": 1,
+   "damage": 26.0,
+   "hit_speed": 0.3,
+   "hp": 1000.0,
+   "kind": "unit",
+   "range": 11.5,
+   "sight_range": 11.5,
+   "speed": 0.0,
+   "splash_radius": 0.0
+  },
+  "zap": {
+   "kind": "spell",
+   "spell_damage": 75.0,
+   "spell_radius": 2.5,
+   "tower_multiplier": 0.3
+  },
+  "zappies": {
+   "count": 3,
+   "damage": 55.0,
+   "hit_speed": 2.1,
+   "hp": 250.0,
+   "kind": "unit",
+   "range": 4.5,
+   "sight_range": 5.0,
+   "speed": 1.0,
+   "splash_radius": 0.0
+  }
+ },
+ "towers": {
+  "king": {
+   "damage": 50.0,
+   "hit_speed": 1.0,
+   "hp": 2400.0,
+   "range": 7.0
+  },
+  "princess": {
+   "damage": 50.0,
+   "hit_speed": 0.8,
+   "hp": 1400.0,
+   "range": 7.5
+  }
+ }
+}

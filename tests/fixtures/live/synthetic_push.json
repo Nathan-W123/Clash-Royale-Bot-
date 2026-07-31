@@ -1,0 +1,83 @@
+{
+  "reference_size": [
+    556,
+    1028
+  ],
+  "homography_anchors": {
+    "own_king": [
+      278,
+      924
+    ],
+    "own_princess_left": [
+      138,
+      831
+    ],
+    "own_princess_right": [
+      418,
+      831
+    ],
+    "enemy_king": [
+      278,
+      439
+    ],
+    "enemy_princess_left": [
+      165,
+      494
+    ],
+    "enemy_princess_right": [
+      391,
+      494
+    ],
+    "bridge_left": [
+      153,
+      644
+    ],
+    "bridge_right": [
+      403,
+      644
+    ]
+  },
+  "units": [
+    {
+      "team": "hostile",
+      "tile": [
+        4.0,
+        21.0
+      ],
+      "hp_fraction": 1.0
+    },
+    {
+      "team": "hostile",
+      "tile": [
+        13.5,
+        24.0
+      ],
+      "hp_fraction": 0.5
+    },
+    {
+      "team": "hostile",
+      "tile": [
+        9.0,
+        18.0
+      ],
+      "hp_fraction": 0.25
+    },
+    {
+      "team": "friendly",
+      "tile": [
+        5.0,
+        9.0
+      ],
+      "hp_fraction": 1.0
+    },
+    {
+      "team": "friendly",
+      "tile": [
+        14.0,
+        11.0
+      ],
+      "hp_fraction": 0.75
+    }
+  ],
+  "synthetic": true
+}

@@ -33,11 +33,17 @@ def make_engine(cards, arena, deck=None, **kwargs):
 
 
 def spawn_unit(engine, stats, side, x, y, hp=None):
-    """Inject a unit directly, bypassing hand/elixir — for engine-level tests."""
+    """Inject a unit directly, bypassing hand/elixir — for engine-level tests.
+
+    Backdated `deployed_at` so injected units are immediately fully active
+    (not subject to the post-deploy delay) unless a test explicitly sets
+    `deployed_at` itself to exercise that feature.
+    """
     from src.simulator.entities import Unit
     u = Unit(id=engine._new_id(), stats=stats, side=side, x=x, y=y,
              hp=hp if hp is not None else stats.hp,
-             cooldown=stats.hit_speed, elixir_value=stats.cost / stats.count)
+             cooldown=stats.hit_speed, elixir_value=stats.cost / stats.count,
+             deployed_at=engine.time - stats.deploy_time)
     engine.units.append(u)
     engine._by_id[u.id] = u
     return u

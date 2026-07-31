@@ -1,0 +1,76 @@
+ppo:
+  n_envs: 8
+  n_steps: 512
+  batch_size: 1024
+  n_epochs: 4
+  lr: 0.0003
+  gamma: 0.997
+  gae_lambda: 0.95
+  clip_range: 0.2
+  vf_coef: 0.5
+  ent_coef_start: 0.01
+  ent_coef_end: 0.002
+  max_grad_norm: 0.5
+  total_steps: 3000000
+network:
+  tier: restricted
+  critic_tier: full
+  card_embed_dim: 16
+  hand_mlp: 64
+  fusion_mlp: 256
+  use_recurrence: true
+  bptt_chunk: 32
+reward:
+  mode: potential
+  terminal: 1.0
+  potential_scale: 0.5
+  tower_damage: 0.3
+  tower_fall: 0.15
+  elixir_trade: 0.02
+  leak: 0.005
+  anneal_start: 1.0
+  anneal_end: 0.0
+  anneal_over_steps: 2000000
+league:
+  exploiter:
+    enabled: false
+    every_steps: 1000000
+    train_steps: 200000
+    ent_coef_scale: 2.0
+  snapshot_every: 100000
+  pool_max: 20
+  anchor_every: 500000
+  sample_latest: 0.2
+  sample_pool: 0.65
+  sample_scripted: 0.15
+  refresh_every: 10000
+opponents:
+  skill_tier: ultimate_champion
+  agent_deck_pool: ladder_top50
+  opponent_deck_pool: ladder_top50
+  weakness_weight: 0.35
+  scripted_bots:
+  - rusher
+  - control
+  - siege
+  - beatdown
+focused_rotation:
+  wins_per_deck: 5
+  target_win_rate: 0.65
+  min_matches_per_deck: 10
+  min_win_rate_per_deck: 0.55
+adaptive_deck:
+  rebuild_every_matches: 25
+  plateau_window: 20
+  plateau_threshold: 0.02
+eval:
+  every_steps: 100000
+  matches_per_opponent: 100
+  regression_tolerance: 0.05
+bc:
+  rollout_matches: 200
+  dagger_rounds: 1
+  dagger_matches: 100
+  epochs: 5
+  lr: 0.001
+  batch_size: 512

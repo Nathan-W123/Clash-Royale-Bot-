@@ -1,0 +1,105 @@
+# Same as training.yaml, but for the `human` observation tier: the live-play
+# target. Keeps the spatial troop/tower/spell grid (a human sees rendered
+# troops by looking at the screen) and drops the opponent-elixir scalar that
+# makes the `full` tier simulator-only. See CLAUDE.md's "On-Screen Visual
+# Perception" and src/agent/obs_layout.py's `_encode_scalars_human`.
+ppo:
+  n_envs: 8
+  n_steps: 512            # per env per rollout -> 4096 transitions/update
+  batch_size: 1024
+  n_epochs: 4
+  lr: 3.0e-4
+  gamma: 0.997
+  gae_lambda: 0.95
+  clip_range: 0.2
+  vf_coef: 0.5
+  ent_coef_start: 0.01
+  ent_coef_end: 0.002
+  max_grad_norm: 0.5
+  total_steps: 3_000_000
+
+network:
+  tier: human
+  card_embed_dim: 16
+  hand_mlp: 64
+  fusion_mlp: 256
+
+# Detection noise applied to *training* observations only, so the policy sees
+# degraded enemy detections resembling src/live/vision.py output rather than
+# perfect simulator coordinates. Enemy entities only — own units/hand/elixir
+# and all towers are read reliably and are never perturbed.
+#
+# These values are PLACEHOLDERS. Once #34 produces real detections, measure
+# p_miss and positional error on recorded frames and refit; guessed noise
+# that is qualitatively wrong transfers worse than none.
+obs_noise:
+  enabled: true
+  jitter_tiles: 0.35
+  p_miss: 0.05
+  p_false_positive: 0.03
+  max_false_positives: 2
+  p_identity_confusion: 0.08
+  p_occlusion: 0.04
+  occlusion_radius: 3.0
+  p_stale: 0.10
+  hp_error_frac: 0.12
+
+reward:
+  terminal: 1.0
+  tower_damage: 0.3       # per 1400 HP of damage differential
+  tower_fall: 0.15
+  elixir_trade: 0.02      # per point of elixir-value trade delta
+  leak: 0.005             # per point of leaked elixir (regen attempted at cap)
+  anneal_start: 1.0
+  anneal_end: 0.0
+  anneal_over_steps: 2_000_000
+
+league:
+  snapshot_every: 100_000
+  pool_max: 20
+  anchor_every: 500_000
+  sample_latest: 0.20
+  sample_pool: 0.65       # PFSP-weighted over pool
+  sample_scripted: 0.15
+  refresh_every: 10_000
+
+opponents:
+  skill_tier: ultimate_champion
+  agent_deck_pool: ladder_top50
+  opponent_deck_pool: ladder_top50
+  weakness_weight: 0.35   # upweight decks the agent loses to
+  scripted_bots: [rusher, control, siege, beatdown]
+
+focused_rotation:
+  wins_per_deck: 5
+  target_win_rate: 0.65
+  min_matches_per_deck: 10
+  min_win_rate_per_deck: 0.55
+
+adaptive_deck:
+  rebuild_every_matches: 25
+  plateau_window: 20
+  plateau_threshold: 0.02
+
+eval:
+  every_steps: 100_000
+  matches_per_opponent: 100
+  regression_tolerance: 0.05
+
+bc:
+  rollout_matches: 200     # scripted round-robin matches for the BC dataset
+  dagger_rounds: 1
+  dagger_matches: 100
+  epochs: 5
+  lr: 1.0e-3
+  batch_size: 512
+
+# Distillation (#37): a `full`-tier teacher supervises this `human` student
+# on states the *student* visits. Point --teacher at a strong full-tier
+# checkpoint; lambda anneals to 0 so the student ends up optimizing its own
+# return rather than imitating information it will never have.
+distill:
+  lambda_start: 1.0
+  lambda_end: 0.0
+  anneal_over_steps: 1_500_000
+  value_gap_mask: 0.5     # skip KL where |V_teacher - V_student| exceeds this

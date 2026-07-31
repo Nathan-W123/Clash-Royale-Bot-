@@ -33,6 +33,16 @@ N_CARD_CHOICES = HAND_SIZE + 1  # no-op + 4 slots
 N_CELLS = PLACE_COLS * PLACE_ROWS
 
 
+class _Unset:
+    """Sentinel distinguishing 'not supplied' from a real `None` action."""
+
+    def __repr__(self) -> str:  # pragma: no cover - debug aid
+        return "UNSET"
+
+
+UNSET = _Unset()
+
+
 class Opponent(Protocol):
     def act(self, env: "CRBattleEnv", side: Side) -> tuple[int, float, float] | None:
         """Return (hand_slot, x, y) in absolute coords, or None for no-op."""
@@ -65,6 +75,11 @@ class CRBattleEnv(gym.Env):
             [np.random.Generator],
             tuple[list[CardStats], list[CardStats], "Opponent | None"]] | None = None,
         seed: int | None = None,
+        tier=obs_layout.TIER_FULL,
+        use_spatial: bool | None = None,
+        obs_noise=None,
+        with_units: bool = False,
+        critic_tier=None,
     ):
         super().__init__()
         self.cards = cards
@@ -82,15 +97,43 @@ class CRBattleEnv(gym.Env):
         self.engine: BattleEngine | None = None
         self._usage: dict[str, int] = {}
         self._illegal = 0
+        self.tier = obs_layout.resolve_tier(use_spatial if use_spatial is not None else tier)
+        # Detection noise is a *training-only* degradation (see
+        # src.agent.obs_noise): eval and benchmark envs leave it None so
+        # their numbers stay comparable across runs.
+        self.obs_noise = obs_noise
+        self.with_units = with_units
+        # Asymmetric critic (#26): None keeps the classic single-observation
+        # env. When set, every observation also carries `critic_*` keys.
+        self.critic_tier = (obs_layout.resolve_tier(critic_tier)
+                            if critic_tier is not None else None)
 
         n_cards = len(cards)
-        self.observation_space = gym.spaces.Dict({
+        scalar_dim = obs_layout.scalar_dim_for(self.tier)
+        spaces = {
             "spatial": gym.spaces.Box(
                 0.0, 30.0, (obs_layout.SPATIAL_CHANNELS, PLACE_ROWS, PLACE_COLS), np.float32),
             "cards": gym.spaces.MultiDiscrete([n_cards] * (HAND_SIZE + 1)),
-            "vector": gym.spaces.Box(0.0, 2.0, (obs_layout.SCALAR_DIM,), np.float32),
-        })
+            "vector": gym.spaces.Box(0.0, 2.0, (scalar_dim,), np.float32),
+        }
+        if with_units:
+            spaces["units"] = gym.spaces.Box(
+                -np.inf, np.inf,
+                (obs_layout.MAX_ENTITIES, obs_layout.UNIT_FEATURE_DIM), np.float32)
+        if self.critic_tier is not None:
+            for key, space in list(spaces.items()):
+                if key == "vector":
+                    space = gym.spaces.Box(
+                        0.0, 2.0,
+                        (obs_layout.scalar_dim_for(self.critic_tier),), np.float32)
+                spaces[f"critic_{key}"] = space
+        self.observation_space = gym.spaces.Dict(spaces)
         self.action_space = gym.spaces.MultiDiscrete([N_CARD_CHOICES, N_CELLS])
+
+    @property
+    def use_spatial(self) -> bool:
+        """Deprecated alias — see `obs_layout.resolve_tier`."""
+        return obs_layout.tier_uses_spatial(self.tier)
 
     # ------------------------------------------------------------ helpers
 
@@ -100,7 +143,23 @@ class CRBattleEnv(gym.Env):
         return masking.cell_to_xy(side, col, row, self.arena.height)
 
     def build_obs(self, side: Side) -> dict[str, np.ndarray]:
-        return obs_layout.encode_obs(self.engine, side, self.card_index)
+        views = None
+        if self.obs_noise is not None and obs_layout.tier_uses_spatial(self.tier):
+            views = self.obs_noise.perturb(
+                obs_layout.unit_views(self.engine, side), self.engine, side)
+        obs = obs_layout.encode_obs(self.engine, side, self.card_index, self.tier,
+                                    views=views, with_units=self.with_units)
+        if self.critic_tier is not None:
+            # Privileged critic observation (#26), carried alongside the
+            # actor's under a `critic_` prefix. Deliberately built from clean
+            # ground truth: `views` (and therefore any detection noise from
+            # #32) is *not* passed through, because the critic models what
+            # actually happened, while the actor models what it could see.
+            critic = obs_layout.encode_obs(
+                self.engine, side, self.card_index, self.critic_tier,
+                with_units=self.with_units)
+            obs.update({f"critic_{k}": v for k, v in critic.items()})
+        return obs
 
     def build_masks(self, side: Side) -> dict[str, np.ndarray]:
         """card: (5,) bool with no-op at index 0; place: (4, 144) bool."""
@@ -146,13 +205,24 @@ class CRBattleEnv(gym.Env):
         self._illegal = 0
         return self.build_obs(Side.BOTTOM), {"masks": self.build_masks(Side.BOTTOM)}
 
-    def step(self, action):
+    def step(self, action, opponent_action=UNSET):
+        """Advance one decision step.
+
+        `opponent_action` lets a vectorized caller supply the opponent's move
+        when it has already been computed — see `SyncVecEnv.step`, which
+        batches policy opponents across envs into a single forward pass.
+        Left as UNSET, the env resolves its own opponent as before. Note that
+        `None` is a meaningful value here (the opponent chose no-op), which is
+        why the default is a distinct sentinel.
+        """
         card_choice, cell = int(action[0]), int(action[1])
         events: list[dict] = []
 
-        opp_action = None
-        if self.opponent is not None:
-            opp_action = self.opponent.act(self, Side.TOP)
+        opp_action = opponent_action
+        if opp_action is UNSET:
+            opp_action = None
+            if self.opponent is not None:
+                opp_action = self.opponent.act(self, Side.TOP)
 
         if not self._apply(Side.BOTTOM, self.decode_action(Side.BOTTOM, card_choice, cell), events):
             self._illegal += 1

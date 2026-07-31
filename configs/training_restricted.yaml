@@ -1,0 +1,79 @@
+# Same as training.yaml, but for the live-play-safe restricted-observation
+# policy: no spatial troop/tower/spell grid, no opponent elixir. See
+# CLAUDE.md's "Live-Play Bridge" section and src/agent/obs_layout.py's
+# `_encode_scalars_restricted` for what this variant can and can't see.
+ppo:
+  n_envs: 8
+  n_steps: 512            # per env per rollout -> 4096 transitions/update
+  batch_size: 1024
+  n_epochs: 4
+  lr: 3.0e-4
+  gamma: 0.997
+  gae_lambda: 0.95
+  clip_range: 0.2
+  vf_coef: 0.5
+  ent_coef_start: 0.01
+  ent_coef_end: 0.002
+  max_grad_norm: 0.5
+  total_steps: 3_000_000
+
+network:
+  use_spatial: false
+  card_embed_dim: 16
+  hand_mlp: 64
+  fusion_mlp: 256
+
+reward:
+  terminal: 1.0
+  tower_damage: 0.3       # per 1400 HP of damage differential
+  tower_fall: 0.15
+  elixir_trade: 0.02      # per point of elixir-value trade delta
+  leak: 0.005             # per point of leaked elixir (regen attempted at cap)
+  anneal_start: 1.0
+  anneal_end: 0.0
+  anneal_over_steps: 2_000_000
+
+league:
+  snapshot_every: 100_000
+  pool_max: 20
+  anchor_every: 500_000
+  sample_latest: 0.20
+  sample_pool: 0.65       # PFSP-weighted over pool
+  sample_scripted: 0.15
+  refresh_every: 10_000
+
+# Opponent selection for training episodes.
+# skill_tier: ultimate_champion uses champion heuristics (reactive defense,
+# elixir discipline, archetype offense) instead of random placement.
+opponents:
+  skill_tier: ultimate_champion
+  agent_deck_pool: ladder_top50
+  opponent_deck_pool: ladder_top50
+  weakness_weight: 0.35   # upweight decks the agent loses to
+  scripted_bots: [rusher, control, siege, beatdown]
+
+# Focused rotation: beat one ladder deck X times, then rotate through all.
+focused_rotation:
+  wins_per_deck: 5
+  target_win_rate: 0.65
+  min_matches_per_deck: 10
+  min_win_rate_per_deck: 0.55
+
+# Adaptive agent deck: rebuild from per-card scores.
+adaptive_deck:
+  rebuild_every_matches: 25
+  plateau_window: 20
+  plateau_threshold: 0.02
+
+eval:
+  every_steps: 100_000
+  matches_per_opponent: 100
+  regression_tolerance: 0.05
+
+bc:
+  rollout_matches: 200     # scripted round-robin matches for the BC dataset
+  dagger_rounds: 1
+  dagger_matches: 100
+  epochs: 5
+  lr: 1.0e-3
+  batch_size: 512

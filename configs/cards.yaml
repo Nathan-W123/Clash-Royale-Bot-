@@ -1,16 +1,27 @@
 # Full roster as of 2026-07-09 — 108 cards (plus heroes.yaml + evolutions).
 # All card stats. Single source of truth for balance — tune here, not in code.
-# Scale: roughly half of real Clash Royale values, consistent with 1400 HP princess towers.
+# Scale: level-1 (base) Clash Royale values — the same table configs/arena.yaml's
+#   towers come from. Troops all scale on one per-level curve, so level-1 values
+#   preserve every real breakpoint; there is nothing to rescale.
+#   NOTE: only part of this file is actually sourced. Run
+#   `python -m scripts.sync_card_stats` for the per-card diff against the real
+#   table (configs/reference_card_stats.json), and see docs/SIM_FIDELITY.md.
 # Sections: Common → Rare → Epic → Legendary (log alias: the_log in load_cards).
 # speed in tiles/sec, range/radius in tiles, hit_speed/delays in seconds.
 # targets: ground | air | both | buildings_only
+#
+# deploy_time: seconds after placement before the card can act (default 1.0,
+#   see constants.DEFAULT_DEPLOY_TIME). Only cards that differ from the
+#   default set it explicitly below. The values here are approximations of
+#   the real game's deploy/wind-up feel, not exact datamined figures — tune
+#   them here rather than in code.
 
 knight:
   type: troop
   cost: 3
   hp: 690
   damage: 79
-  hit_speed: 1.1
+  hit_speed: 1.2
   range: 0.8
   sight_range: 5.5
   speed: 1.0
@@ -22,9 +33,9 @@ knight:
 archers:
   type: troop
   cost: 3
-  hp: 125
+  hp: 119
   damage: 42
-  hit_speed: 1.2
+  hit_speed: 0.9
   range: 5.0
   sight_range: 5.5
   speed: 1.0
@@ -37,14 +48,14 @@ goblins:
   type: troop
   cost: 2
   hp: 80
-  damage: 50
+  damage: 47
   hit_speed: 1.1
   range: 0.5
   sight_range: 5.5
-  speed: 1.5
+  speed: 2
   targets: ground
   flying: false
-  count: 3
+  count: 4
   splash_radius: 0.0
 
 skeletons:
@@ -64,8 +75,8 @@ skeletons:
 giant:
   type: troop
   cost: 5
-  hp: 2000
-  damage: 105
+  hp: 1930
+  damage: 120
   hit_speed: 1.5
   range: 1.0
   sight_range: 5.5
@@ -78,9 +89,9 @@ giant:
 musketeer:
   type: troop
   cost: 4
-  hp: 300
-  damage: 90
-  hit_speed: 1.1
+  hp: 340
+  damage: 103
+  hit_speed: 1
   range: 6.0
   sight_range: 6.0
   speed: 1.0
@@ -92,8 +103,8 @@ musketeer:
 minions:
   type: troop
   cost: 3
-  hp: 95
-  damage: 40
+  hp: 90
+  damage: 46
   hit_speed: 1.0
   range: 1.0
   sight_range: 5.5
@@ -106,12 +117,12 @@ minions:
 baby_dragon:
   type: troop
   cost: 4
-  hp: 500
-  damage: 65
-  hit_speed: 1.6
+  hp: 720
+  damage: 100
+  hit_speed: 1.5
   range: 3.5
   sight_range: 5.5
-  speed: 1.0
+  speed: 1.5
   targets: both
   flying: true
   count: 1
@@ -120,12 +131,12 @@ baby_dragon:
 mini_pekka:
   type: troop
   cost: 4
-  hp: 590
-  damage: 290
-  hit_speed: 1.8
+  hp: 642
+  damage: 340
+  hit_speed: 1.6
   range: 0.8
   sight_range: 5.5
-  speed: 1.25
+  speed: 1.5
   targets: ground
   flying: false
   count: 1
@@ -134,8 +145,8 @@ mini_pekka:
 valkyrie:
   type: troop
   cost: 4
-  hp: 880
-  damage: 120
+  hp: 900
+  damage: 126
   hit_speed: 1.5
   range: 1.0
   sight_range: 5.5
@@ -148,12 +159,12 @@ valkyrie:
 hog_rider:
   type: troop
   cost: 4
-  hp: 700
-  damage: 130
+  hp: 800
+  damage: 150
   hit_speed: 1.6
   range: 0.8
   sight_range: 5.5
-  speed: 1.75
+  speed: 2
   targets: buildings_only
   flying: false
   count: 1
@@ -170,7 +181,7 @@ fireball:
 arrows:
   type: spell
   cost: 3
-  spell_damage: 120
+  spell_damage: 48
   spell_radius: 4.0
   spell_delay: 0.6
   tower_multiplier: 0.35
@@ -178,15 +189,16 @@ arrows:
 zap:
   type: spell
   cost: 2
-  spell_damage: 80
+  spell_damage: 75
   spell_radius: 2.0
   spell_delay: 0.1
   tower_multiplier: 0.35
+  stun_duration: 0.5            # resets sparky/inferno wind-ups
 
 cannon:
   type: building
   cost: 3
-  hp: 380
+  hp: 322
   damage: 83
   hit_speed: 0.9
   range: 5.5
@@ -210,7 +222,7 @@ tesla:
 log:
   type: spell
   cost: 2
-  spell_damage: 100
+  spell_damage: 240
   spell_radius: 3.5
   spell_delay: 0.0
   tower_multiplier: 0.35
@@ -219,8 +231,8 @@ ice_spirit:
   type: troop
   cost: 1
   hp: 90
-  damage: 50
-  hit_speed: 1.0
+  damage: 43
+  hit_speed: 0.3
   range: 2.5
   sight_range: 5.5
   speed: 2.0
@@ -232,12 +244,12 @@ ice_spirit:
 ice_golem:
   type: troop
   cost: 2
-  hp: 520
-  damage: 70
-  hit_speed: 1.5
+  hp: 565
+  damage: 40
+  hit_speed: 2.5
   range: 0.8
   sight_range: 5.5
-  speed: 1.0
+  speed: 0.75
   targets: ground
   flying: false
   count: 1
@@ -246,22 +258,24 @@ ice_golem:
 balloon:
   type: troop
   cost: 5
-  hp: 1200
+  hp: 1050
   damage: 400
-  hit_speed: 3.0
+  hit_speed: 2
   range: 0.2
   sight_range: 5.5
-  speed: 0.75
+  speed: 1
   targets: buildings_only
   flying: true
   count: 1
   splash_radius: 0.0
+  death_damage: 180.0           # the payload keeps falling after it dies
+  death_damage_radius: 2.0
 
 miner:
   type: troop
   cost: 3
-  hp: 650
-  damage: 80
+  hp: 1000
+  damage: 160
   hit_speed: 1.2
   range: 0.8
   sight_range: 5.5
@@ -270,13 +284,14 @@ miner:
   flying: false
   count: 1
   splash_radius: 0.0
+  deploy_anywhere: true         # tunnels: any tile on the board is legal
 
 wall_breakers:
   type: troop
   cost: 2
-  hp: 140
-  damage: 280
-  hit_speed: 1.0
+  hp: 207
+  damage: 245
+  hit_speed: 1.2
   range: 0.5
   sight_range: 5.5
   speed: 2.0
@@ -288,12 +303,12 @@ wall_breakers:
 royal_hogs:
   type: troop
   cost: 5
-  hp: 260
-  damage: 110
-  hit_speed: 1.6
+  hp: 395
+  damage: 35
+  hit_speed: 1.2
   range: 0.8
   sight_range: 5.5
-  speed: 1.5
+  speed: 2
   targets: buildings_only
   flying: false
   count: 4
@@ -302,7 +317,7 @@ royal_hogs:
 royal_giant:
   type: troop
   cost: 6
-  hp: 1800
+  hp: 1200
   damage: 120
   hit_speed: 1.7
   range: 5.0
@@ -356,10 +371,11 @@ tornado:
 lightning:
   type: spell
   cost: 6
-  spell_damage: 450
+  spell_damage: 660
   spell_radius: 2.0
   spell_delay: 0.0
   tower_multiplier: 0.35
+  stun_duration: 0.5
 
 freeze:
   type: spell
@@ -372,12 +388,12 @@ freeze:
 barbarians:
   type: troop
   cost: 5
-  hp: 300
+  hp: 262
   damage: 75
-  hit_speed: 1.5
+  hit_speed: 1.3
   range: 0.8
   sight_range: 5.5
-  speed: 1.25
+  speed: 1
   targets: ground
   flying: false
   count: 5
@@ -386,9 +402,9 @@ barbarians:
 bomber:
   type: troop
   cost: 2
-  hp: 120
-  damage: 120
-  hit_speed: 1.9
+  hp: 130
+  damage: 87
+  hit_speed: 1.8
   range: 5.0
   sight_range: 5.5
   speed: 1.0
@@ -400,9 +416,9 @@ bomber:
 ice_wizard:
   type: troop
   cost: 3
-  hp: 300
-  damage: 50
-  hit_speed: 1.5
+  hp: 569
+  damage: 75
+  hit_speed: 1.7
   range: 5.5
   sight_range: 6.0
   speed: 1.0
@@ -414,12 +430,12 @@ ice_wizard:
 electro_wizard:
   type: troop
   cost: 4
-  hp: 300
-  damage: 80
+  hp: 590
+  damage: 91
   hit_speed: 1.8
   range: 5.0
   sight_range: 5.5
-  speed: 1.0
+  speed: 1.5
   targets: both
   flying: false
   count: 1
@@ -429,7 +445,7 @@ wizard:
   type: troop
   cost: 5
   hp: 340
-  damage: 130
+  damage: 133
   hit_speed: 1.4
   range: 5.5
   sight_range: 6.0
@@ -442,9 +458,9 @@ wizard:
 executioner:
   type: troop
   cost: 5
-  hp: 600
-  damage: 80
-  hit_speed: 2.4
+  hp: 800
+  damage: 106
+  hit_speed: 0.9
   range: 4.5
   sight_range: 5.5
   speed: 1.0
@@ -456,12 +472,12 @@ executioner:
 bowler:
   type: troop
   cost: 5
-  hp: 1200
-  damage: 120
-  hit_speed: 2.4
+  hp: 1300
+  damage: 180
+  hit_speed: 2.5
   range: 4.5
   sight_range: 5.5
-  speed: 1.0
+  speed: 0.75
   targets: ground
   flying: false
   count: 1
@@ -470,12 +486,12 @@ bowler:
 lumberjack:
   type: troop
   cost: 4
-  hp: 600
-  damage: 140
-  hit_speed: 0.7
+  hp: 1060
+  damage: 200
+  hit_speed: 0.8
   range: 0.8
   sight_range: 5.5
-  speed: 1.5
+  speed: 2
   targets: ground
   flying: false
   count: 1
@@ -484,8 +500,8 @@ lumberjack:
 bandit:
   type: troop
   cost: 3
-  hp: 450
-  damage: 110
+  hp: 750
+  damage: 160
   hit_speed: 1.0
   range: 0.8
   sight_range: 5.5
@@ -494,12 +510,15 @@ bandit:
   flying: false
   count: 1
   splash_radius: 0.0
+  charge_distance: 4.0          # the dash: long run-up, big burst
+  charge_damage_multiplier: 2.0
+  charge_speed_multiplier: 2.5
 
 pekka:
   type: troop
   cost: 7
-  hp: 2200
-  damage: 400
+  hp: 2350
+  damage: 510
   hit_speed: 1.8
   range: 0.8
   sight_range: 5.5
@@ -512,9 +531,9 @@ pekka:
 night_witch:
   type: troop
   cost: 4
-  hp: 550
-  damage: 160
-  hit_speed: 1.1
+  hp: 750
+  damage: 260
+  hit_speed: 1.3
   range: 1.0
   sight_range: 5.5
   speed: 1.0
@@ -526,9 +545,9 @@ night_witch:
 phoenix:
   type: troop
   cost: 4
-  hp: 500
-  damage: 90
-  hit_speed: 1.2
+  hp: 870
+  damage: 180
+  hit_speed: 1
   range: 3.5
   sight_range: 5.5
   speed: 1.0
@@ -540,9 +559,9 @@ phoenix:
 bats:
   type: troop
   cost: 2
-  hp: 40
-  damage: 35
-  hit_speed: 1.1
+  hp: 32
+  damage: 32
+  hit_speed: 1.3
   range: 0.5
   sight_range: 5.5
   speed: 2.0
@@ -554,23 +573,23 @@ bats:
 skeleton_army:
   type: troop
   cost: 3
-  hp: 40
-  damage: 40
+  hp: 32
+  damage: 32
   hit_speed: 1.0
   range: 0.5
   sight_range: 5.5
   speed: 1.5
   targets: ground
   flying: false
-  count: 8
+  count: 15
   splash_radius: 0.0
 
 fisherman:
   type: troop
   cost: 3
-  hp: 550
-  damage: 90
-  hit_speed: 1.6
+  hp: 720
+  damage: 160
+  hit_speed: 1.3
   range: 0.8
   sight_range: 5.5
   speed: 1.0
@@ -582,9 +601,9 @@ fisherman:
 hunter:
   type: troop
   cost: 4
-  hp: 450
-  damage: 200
-  hit_speed: 2.0
+  hp: 524
+  damage: 53
+  hit_speed: 2.2
   range: 4.0
   sight_range: 5.5
   speed: 1.0
@@ -596,23 +615,26 @@ hunter:
 ram_rider:
   type: troop
   cost: 4
-  hp: 900
-  damage: 140
-  hit_speed: 1.4
+  hp: 1461
+  damage: 220
+  hit_speed: 1.8
   range: 0.8
   sight_range: 5.5
-  speed: 1.5
+  speed: 1
   targets: buildings_only
   flying: false
   count: 1
   splash_radius: 0.0
+  charge_distance: 3.0
+  charge_damage_multiplier: 2.0
+  charge_speed_multiplier: 1.7
 
 zappies:
   type: troop
   cost: 4
-  hp: 120
-  damage: 45
-  hit_speed: 2.0
+  hp: 250
+  damage: 55
+  hit_speed: 2.1
   range: 4.5
   sight_range: 5.5
   speed: 1.0
@@ -639,11 +661,11 @@ mega_minion:
   type: troop
   cost: 3
   hp: 400
-  damage: 100
-  hit_speed: 1.6
+  damage: 147
+  hit_speed: 1.5
   range: 1.5
   sight_range: 5.5
-  speed: 1.25
+  speed: 1
   targets: both
   flying: true
   count: 1
@@ -653,36 +675,39 @@ goblin_gang:
   type: troop
   cost: 3
   hp: 80
-  damage: 50
+  damage: 47
   hit_speed: 1.1
   range: 0.5
   sight_range: 5.5
-  speed: 1.5
+  speed: 2
   targets: ground
   flying: false
-  count: 4
+  count: 3
   splash_radius: 0.0
 
 prince:
   type: troop
   cost: 5
-  hp: 1100
-  damage: 200
+  hp: 1200
+  damage: 245
   hit_speed: 1.4
   range: 1.2
   sight_range: 5.5
-  speed: 1.25
+  speed: 1
   targets: ground
   flying: false
   count: 1
   splash_radius: 0.0
+  charge_distance: 3.5          # tiles of clear run before the charge lands
+  charge_damage_multiplier: 2.0
+  charge_speed_multiplier: 1.8
 
 witch:
   type: troop
   cost: 5
-  hp: 450
-  damage: 50
-  hit_speed: 1.0
+  hp: 524
+  damage: 84
+  hit_speed: 1.1
   range: 5.0
   sight_range: 5.5
   speed: 1.0
@@ -694,8 +719,8 @@ witch:
 lava_hound:
   type: troop
   cost: 7
-  hp: 2400
-  damage: 30
+  hp: 3150
+  damage: 45
   hit_speed: 1.3
   range: 2.0
   sight_range: 5.5
@@ -704,12 +729,14 @@ lava_hound:
   flying: true
   count: 1
   splash_radius: 0.0
+  death_spawn: lava_pup
+  death_spawn_count: 3
 
 minion_horde:
   type: troop
   cost: 5
-  hp: 95
-  damage: 40
+  hp: 90
+  damage: 46
   hit_speed: 1.0
   range: 1.0
   sight_range: 5.5
@@ -722,30 +749,35 @@ minion_horde:
 dark_prince:
   type: troop
   cost: 4
-  hp: 700
-  damage: 150
+  hp: 750
+  damage: 155
   hit_speed: 1.3
   range: 1.2
   sight_range: 5.5
-  speed: 1.25
+  speed: 1
   targets: ground
   flying: false
   count: 1
   splash_radius: 2.0
+  charge_distance: 3.5
+  charge_damage_multiplier: 2.0
+  charge_speed_multiplier: 1.7
 
 golem:
   type: troop
   cost: 8
-  hp: 2600
-  damage: 150
-  hit_speed: 1.9
+  hp: 3200
+  damage: 195
+  hit_speed: 2.5
   range: 1.0
   sight_range: 5.5
-  speed: 0.6
+  speed: 0.75
   targets: buildings_only
   flying: false
   count: 1
   splash_radius: 0.0
+  death_spawn: golemite
+  death_spawn_count: 2
 
 tombstone:
   type: building
@@ -757,39 +789,45 @@ tombstone:
   sight_range: 5.5
   targets: ground
   lifetime: 40.0
+  deploy_time: 1.5   # spawner: brief wind-up
 
 inferno_tower:
   type: building
   cost: 5
-  hp: 800
-  damage: 30
+  hp: 825
+  damage: 20
   hit_speed: 0.4
   range: 6.0
   sight_range: 6.0
   targets: both
   lifetime: 40.0
+  deploy_time: 1.5   # beam has to spin up before it bites
+  ramp_up_time: 3.0             # seconds on one target to reach full beam
+  ramp_up_multiplier: 6.0       # ...and 6x damage once it gets there
 
 mortar:
   type: building
   cost: 4
-  hp: 500
-  damage: 110
+  hp: 535
+  damage: 104
   hit_speed: 5.0
   range: 11.0
   sight_range: 11.0
   targets: ground
   lifetime: 30.0
+  deploy_time: 3.5   # siege: long wind-up before the first shell
 
 x_bow:
   type: building
   cost: 6
   hp: 1000
-  damage: 20
+  damage: 26
   hit_speed: 0.3
   range: 11.5
   sight_range: 11.5
   targets: ground
   lifetime: 40.0
+  deploy_time: 3.5   # siege: long load before it starts firing
 
 furnace:
   type: building
@@ -801,6 +839,7 @@ furnace:
   sight_range: 5.5
   targets: ground
   lifetime: 50.0
+  deploy_time: 2.0   # spawner: first spawn is delayed
 
 goblin_hut:
   type: building
@@ -812,15 +851,16 @@ goblin_hut:
   sight_range: 5.5
   targets: ground
   lifetime: 40.0
+  deploy_time: 2.0   # spawner: first spawn is delayed
 
 # --- Epic / meta cards (not heroes) ---
 
 magic_archer:
   type: troop
   cost: 4
-  hp: 380
-  damage: 88
-  hit_speed: 1.0
+  hp: 440
+  damage: 111
+  hit_speed: 1.1
   range: 6.5
   sight_range: 6.5
   speed: 1.0
@@ -832,7 +872,7 @@ magic_archer:
 barbarian_barrel:
   type: spell
   cost: 2
-  spell_damage: 80
+  spell_damage: 151
   spell_radius: 2.0
   spell_delay: 0.5
   tower_multiplier: 0.35
@@ -842,26 +882,29 @@ barbarian_barrel:
 battle_ram:
   type: troop
   cost: 4
-  hp: 700
-  damage: 200
-  hit_speed: 1.0
+  hp: 456
+  damage: 135
+  hit_speed: 0.4
   range: 0.8
   sight_range: 5.5
-  speed: 1.5
+  speed: 1
   targets: buildings_only
   flying: false
   count: 1
   splash_radius: 0.0
+  charge_distance: 3.0
+  charge_damage_multiplier: 2.0
+  charge_speed_multiplier: 1.8
 
 dart_goblin:
   type: troop
   cost: 3
-  hp: 130
-  damage: 65
-  hit_speed: 0.65
+  hp: 123
+  damage: 62
+  hit_speed: 0.7
   range: 6.5
   sight_range: 6.5
-  speed: 1.5
+  speed: 2
   targets: both
   flying: false
   count: 1
@@ -871,8 +914,8 @@ electro_dragon:
   type: troop
   cost: 5
   hp: 600
-  damage: 80
-  hit_speed: 1.8
+  damage: 120
+  hit_speed: 2.1
   range: 3.5
   sight_range: 5.5
   speed: 1.0
@@ -884,7 +927,7 @@ electro_dragon:
 giant_snowball:
   type: spell
   cost: 2
-  spell_damage: 80
+  spell_damage: 75
   spell_radius: 2.5
   spell_delay: 0.0
   tower_multiplier: 0.35
@@ -900,9 +943,9 @@ goblin_barrel:
 goblin_cage:
   type: building
   cost: 4
-  hp: 500
+  hp: 350
   damage: 1
-  hit_speed: 1.0
+  hit_speed: 10
   range: 0.0
   sight_range: 5.5
   targets: ground
@@ -921,16 +964,17 @@ goblin_drill:
   flying: false
   count: 1
   splash_radius: 0.0
+  deploy_anywhere: true
 
 goblin_giant:
   type: troop
   cost: 5
-  hp: 1500
-  damage: 100
+  hp: 2085
+  damage: 110
   hit_speed: 1.5
   range: 1.0
   sight_range: 5.5
-  speed: 0.75
+  speed: 1
   targets: buildings_only
   flying: false
   count: 1
@@ -939,8 +983,8 @@ goblin_giant:
 inferno_dragon:
   type: troop
   cost: 4
-  hp: 550
-  damage: 50
+  hp: 1070
+  damage: 30
   hit_speed: 0.4
   range: 3.5
   sight_range: 5.5
@@ -949,16 +993,18 @@ inferno_dragon:
   flying: true
   count: 1
   splash_radius: 0.0
+  ramp_up_time: 3.0
+  ramp_up_multiplier: 6.0
 
 mega_knight:
   type: troop
   cost: 7
-  hp: 2000
-  damage: 150
-  hit_speed: 1.8
+  hp: 3300
+  damage: 222
+  hit_speed: 1.7
   range: 1.0
   sight_range: 5.5
-  speed: 0.75
+  speed: 1
   targets: ground
   flying: false
   count: 1
@@ -967,9 +1013,9 @@ mega_knight:
 royal_ghost:
   type: troop
   cost: 3
-  hp: 550
-  damage: 130
-  hit_speed: 1.2
+  hp: 1000
+  damage: 216
+  hit_speed: 1.8
   range: 0.8
   sight_range: 5.5
   speed: 1.5
@@ -977,13 +1023,16 @@ royal_ghost:
   flying: false
   count: 1
   splash_radius: 0.0
+  charge_distance: 4.0
+  charge_damage_multiplier: 1.8
+  charge_speed_multiplier: 2.2
 
 royal_recruits:
   type: troop
   cost: 7
-  hp: 200
-  damage: 70
-  hit_speed: 1.2
+  hp: 208
+  damage: 52
+  hit_speed: 1.3
   range: 0.8
   sight_range: 5.5
   speed: 1.0
@@ -1005,12 +1054,12 @@ skeleton_barrel:
 spear_goblins:
   type: troop
   cost: 2
-  hp: 26
-  damage: 24
-  hit_speed: 1.3
+  hp: 52
+  damage: 32
+  hit_speed: 1.7
   range: 5.0
   sight_range: 5.5
-  speed: 1.5
+  speed: 2
   targets: both
   flying: false
   count: 3
@@ -1033,8 +1082,8 @@ fire_spirits:
 elite_barbarians:
   type: troop
   cost: 6
-  hp: 245
-  damage: 80
+  hp: 524
+  damage: 150
   hit_speed: 1.4
   range: 0.8
   sight_range: 5.5
@@ -1047,12 +1096,12 @@ elite_barbarians:
 guards:
   type: troop
   cost: 3
-  hp: 65
-  damage: 25
-  hit_speed: 1.1
+  hp: 51
+  damage: 76
+  hit_speed: 1
   range: 0.8
   sight_range: 5.5
-  speed: 1.0
+  speed: 1.5
   targets: ground
   flying: false
   count: 3
@@ -1105,8 +1154,8 @@ heal_spirit:
 battle_healer:
   type: troop
   cost: 4
-  hp: 450
-  damage: 40
+  hp: 810
+  damage: 70
   hit_speed: 1.5
   range: 1.0
   sight_range: 5.5
@@ -1119,9 +1168,9 @@ battle_healer:
 skeleton_dragons:
   type: troop
   cost: 4
-  hp: 95
-  damage: 35
-  hit_speed: 1.8
+  hp: 220
+  damage: 63
+  hit_speed: 1.9
   range: 3.5
   sight_range: 5.5
   speed: 1.5
@@ -1133,12 +1182,12 @@ skeleton_dragons:
 flying_machine:
   type: troop
   cost: 4
-  hp: 225
-  damage: 50
-  hit_speed: 1.0
+  hp: 290
+  damage: 81
+  hit_speed: 1.1
   range: 5.5
   sight_range: 6.0
-  speed: 1.25
+  speed: 1.5
   targets: both
   flying: true
   count: 1
@@ -1147,9 +1196,9 @@ flying_machine:
 three_musketeers:
   type: troop
   cost: 9
-  hp: 300
-  damage: 90
-  hit_speed: 1.1
+  hp: 340
+  damage: 103
+  hit_speed: 1
   range: 6.0
   sight_range: 6.0
   speed: 1.0
@@ -1182,6 +1231,7 @@ elixir_collector:
   sight_range: 5.5
   targets: ground
   lifetime: 70.0
+  deploy_time: 2.0   # pump: first elixir takes a beat
 
 barbarian_hut:
   type: building
@@ -1193,11 +1243,12 @@ barbarian_hut:
   sight_range: 5.5
   targets: ground
   lifetime: 60.0
+  deploy_time: 2.5   # spawner: heavy, slow to come online
 
 royal_delivery:
   type: spell
   cost: 3
-  spell_damage: 100
+  spell_damage: 171
   spell_radius: 2.0
   spell_delay: 0.5
   tower_multiplier: 0.35
@@ -1215,9 +1266,9 @@ goblin_curse:
 giant_skeleton:
   type: troop
   cost: 6
-  hp: 1250
-  damage: 100
-  hit_speed: 1.5
+  hp: 2140
+  damage: 167
+  hit_speed: 1.4
   range: 1.0
   sight_range: 5.5
   speed: 1.0
@@ -1225,16 +1276,18 @@ giant_skeleton:
   flying: false
   count: 1
   splash_radius: 0.0
+  death_damage: 350.0           # the bomb is the card
+  death_damage_radius: 3.0
 
 cannon_cart:
   type: troop
   cost: 5
-  hp: 350
-  damage: 70
-  hit_speed: 1.2
+  hp: 558
+  damage: 133
+  hit_speed: 1
   range: 5.5
   sight_range: 6.0
-  speed: 1.25
+  speed: 1
   targets: ground
   flying: false
   count: 1
@@ -1243,12 +1296,12 @@ cannon_cart:
 electro_giant:
   type: troop
   cost: 8
-  hp: 1700
-  damage: 60
-  hit_speed: 2.4
+  hp: 2410
+  damage: 102
+  hit_speed: 2.1
   range: 1.2
   sight_range: 5.5
-  speed: 0.6
+  speed: 0.75
   targets: buildings_only
   flying: false
   count: 1
@@ -1257,12 +1310,12 @@ electro_giant:
 elixir_golem:
   type: troop
   cost: 6
-  hp: 600
-  damage: 80
-  hit_speed: 1.4
+  hp: 740
+  damage: 120
+  hit_speed: 1.1
   range: 1.0
   sight_range: 5.5
-  speed: 1.0
+  speed: 0.75
   targets: buildings_only
   flying: false
   count: 1
@@ -1271,8 +1324,8 @@ elixir_golem:
 bomb_tower:
   type: building
   cost: 4
-  hp: 450
-  damage: 65
+  hp: 640
+  damage: 105
   hit_speed: 1.6
   range: 6.0
   sight_range: 6.0
@@ -1322,23 +1375,24 @@ princess:
 sparky:
   type: troop
   cost: 6
-  hp: 600
-  damage: 550
+  hp: 1200
+  damage: 1100
   hit_speed: 4.0
   range: 4.5
   sight_range: 5.5
-  speed: 0.6
+  speed: 0.75
   targets: ground
   flying: false
   count: 1
   splash_radius: 2.5
+  deploy_time: 3.0   # long charge-up before the first blast
 
 mother_witch:
   type: troop
   cost: 4
-  hp: 250
-  damage: 50
-  hit_speed: 1.2
+  hp: 440
+  damage: 110
+  hit_speed: 1
   range: 5.5
   sight_range: 6.0
   speed: 1.0
@@ -1374,3 +1428,36 @@ ronin:
   flying: false
   count: 1
   splash_radius: 0.0
+
+# Death-spawn products (#36). Not playable on their own — they only exist as
+# what a Lava Hound or Golem leaves behind, which is most of what those cards
+# are actually paying for.
+lava_pup:
+  type: troop
+  cost: 1
+  hp: 130
+  damage: 45
+  hit_speed: 1.0
+  range: 1.6
+  sight_range: 5.5
+  speed: 1.5
+  targets: both
+  flying: true
+  count: 1
+  splash_radius: 0.0
+
+golemite:
+  type: troop
+  cost: 1
+  hp: 600
+  damage: 40
+  hit_speed: 1.9
+  range: 1.0
+  sight_range: 5.5
+  speed: 0.6
+  targets: buildings_only
+  flying: false
+  count: 1
+  splash_radius: 0.0
+  death_damage: 60.0
+  death_damage_radius: 2.0

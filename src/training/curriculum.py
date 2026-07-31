@@ -29,6 +29,10 @@ class CurriculumStage:
     opponents: tuple[str, ...]
     selfplay: bool
     promote: PromoteCriteria | None
+    # Drive this stage with FocusedRotationManager (one opponent deck at a
+    # time) + AdaptiveDeckBuilder (agent deck rebuilt from per-card scores)
+    # instead of sampling decks independently each episode.
+    focused_rotation: bool = False
 
 
 def load_curriculum(path: Path | None = None) -> list[CurriculumStage]:
@@ -50,6 +54,7 @@ def load_curriculum(path: Path | None = None) -> list[CurriculumStage]:
                 opponents=tuple(spec.get("opponents", ["champion"])),
                 selfplay=bool(spec.get("selfplay", False)),
                 promote=PromoteCriteria(**promote) if promote else None,
+                focused_rotation=bool(spec.get("focused_rotation", False)),
             )
         )
     return stages

@@ -10,6 +10,10 @@ dependencies = [
     "torch>=2.2",
     "matplotlib>=3.8",
     "tensorboard>=2.16",
+    "pillow>=10.0",
+    # Windows is spawn-only, so subprocess workers receive their env factories
+    # by pickle; the closures in train.py need cloudpickle, not stdlib pickle.
+    "cloudpickle>=3.0",
 ]
 
 [dependency-groups]
@@ -26,3 +30,8 @@ packages = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    # Subprocess-spawn tests pay real process-startup cost on Windows.
+    # Deselect with: pytest -m "not slow"
+    "slow: spawns worker processes or otherwise takes seconds",
+]

@@ -16,6 +16,13 @@ A reinforcement learning agent that learns to play Clash Royale entirely inside 
 | **Training reports** | ✅ | W/L, win rate, matchups, card usage, TensorBoard |
 | Heroes & evolutions | ✅ | Config-driven; abilities + deck rules |
 | PPO agent | ✅ | Masked factored policy + league self-play (`src/agent/`) |
+| Observation tiers | ✅ | `full` / `human` / `restricted` (`src/agent/obs_layout.py`) |
+| Domain randomization | ✅ | Degraded enemy detections for training (`src/agent/obs_noise.py`) |
+| Teacher→student distillation | ✅ | Privileged teacher, live-legal student (`src/agent/distill.py`) |
+| Opponent tracker | ✅ | Derives opponent elixir + cycle from observed play (`src/agent/opponent_tracker.py`) |
+| Arena perception | ✅ | Homography + team-tinted blob detection (`src/live/`) |
+| Inference-time search | ✅ | Sim-only rollout search (`src/agent/search.py`) |
+| Population-based training | ✅ | Hyperparameter search on the frozen benchmark (`src/agent/pbt.py`) |
 
 ---
 
@@ -25,6 +32,44 @@ A reinforcement learning agent that learns to play Clash Royale entirely inside 
 
 - Python 3.11+
 - [uv](https://github.com/astral-sh/uv) or pip
+
+### Live Windows desktop bridge
+
+`src.live` can watch an already-running Clash Royale match on this Windows
+desktop and play a calibrated preset deck. It does not start matchmaking. The
+live bridge is separate from training because it only sees screen pixels, not
+simulator state. Keep the game window visible and unobscured.
+
+Create `configs/live_play.yaml` from
+[`configs/live_play.example.yaml`](configs/live_play.example.yaml), then set
+the coordinates, `reference_size` used when recording them, preset deck,
+opening hand, and draw order. The example uses `desktop_capture: window`,
+which finds the visible window whose title contains `window_title` and scales
+coordinates to that window's current client size. This means you do not need
+to know or preserve its desktop position or size. If your launcher title does
+not include `Clash Royale`, change `window_title` to a distinctive part of its
+title. First verify recognition with:
+
+```bash
+python -m src.live --config configs/live_play.yaml
+```
+
+That command only logs proposed plays. Once match detection and coordinates
+are calibrated, pass `--armed` to permit desktop clicks:
+
+```bash
+python -m src.live --config configs/live_play.yaml --armed
+```
+
+To use the prior Android bridge instead, set `transport: adb` and supply an
+`adb_path` (and optionally `device_serial`) in the same configuration.
+
+By default, `decision_mode: dynamic_slots` re-reads the four visible card
+slots on every capture rather than using a fixed deck or draw cycle. It uses
+the first affordable slot in `slot_priority` and deploys it at
+`dynamic_target`; it does not identify card artwork, so use a safe target and
+do not expect spell-aware placement. Set `decision_mode: known_deck` only for
+the legacy calibrated deck-cycle behavior.
 
 ### Install
 
@@ -123,6 +168,71 @@ Optional BC bootstrap before PPO:
 python -m src.agent.bc --matches 150 --out checkpoints/bc_init.pt
 python -m src.agent.train --run my_run --stage one_lane --bc-init checkpoints/bc_init.pt
 ```
+
+---
+
+## Observation tiers
+
+What the policy is allowed to read is a scope decision, not a tuning knob —
+see CLAUDE.md, "On-Screen Visual Perception". Pick one with a training
+config; the tier is stored in the checkpoint.
+
+| Tier | Spatial grid | Own hand/elixir | Opponent elixir | Config | Live-legal? |
+|------|--------------|-----------------|-----------------|--------|-------------|
+| `full` | real | yes | **yes** | `configs/training.yaml` | No — simulator/critic only |
+| `human` | real | yes | no | `configs/training_human.yaml` | **Yes — the live-play target** |
+| `restricted` | zero-filled | yes | no | `configs/training_restricted.yaml` | Yes (fallback: no vision) |
+
+```bash
+python -m src.agent.train --run human1 --config configs/training_human.yaml --stage full_pool
+```
+
+The scalar widths are *not* ordered by tier (`restricted` is 18 wide,
+`full` is 17): restricted drops opponent elixir but adds four per-tower alive
+flags. Always go through `obs_layout.scalar_dim_for`. The old
+`use_spatial: true|false` key still works as a tier alias so existing
+checkpoints keep loading.
+
+### Domain randomization
+
+`human`/`full` training observations can be degraded to resemble real
+detections — positional jitter (applied in tile space, before grid binning),
+missed detections, false positives, identity confusion, occlusion, and
+capture lag. Enemy entities only; own units, own hand/elixir, and all towers
+are read reliably and are never perturbed. Configure under `obs_noise:` (see
+`configs/training_human.yaml`). Applied during training only, so benchmark
+numbers stay comparable.
+
+### Teacher → student distillation
+
+Train a strong `full`-tier teacher, then distil it into a `human`-tier
+student on states the **student** visits, with the KL weight annealing to
+zero:
+
+```bash
+python -m src.agent.distill --teacher checkpoints/full_final.pt \
+  --run human_distill --stage full_pool --config configs/training_human.yaml
+```
+
+### Set-based unit encoder (ablation)
+
+`network.use_set_encoder: true` swaps the CNN-over-grid for a
+permutation-invariant deep-sets encoder over the entity list, keeping exact
+positions and per-unit identity that the 2x2-tile grid throws away. Compare
+the two on the frozen benchmark, not on self-play win rate.
+
+### Inference-time search (simulator only)
+
+`src.agent.search.SearchBot` wraps a policy with rollout search over its
+top-k masked actions. Too slow for the 0.5s live cadence; use it for a
+stronger sim agent and as a distillation teacher.
+
+### Population-based training
+
+`src.agent.pbt` searches PPO hyperparameters and reward weights. Fitness
+comes from the frozen benchmark only — `PBTPopulation.record` rejects any
+other source, because self-play win rate trends to 50% by construction.
+Needs many concurrent runs to be worthwhile.
 
 ---
 
@@ -288,9 +398,84 @@ Key files — edit YAML, not code, for balance and training tweaks:
 
 ---
 
-## Out of scope
+## Arena perception
 
-No integration with the real Clash Royale client (screen capture, OCR, input injection, etc.). Simulator only.
+Reading the rendered arena is in scope: a human sees troops by looking at the
+display, so a vision system that reads them replicates ordinary perception.
+Memory reading and packet inspection remain out of scope — see "Live-play
+scope" below and CLAUDE.md.
+
+- **`src/live/homography.py`** — pixel↔tile mapping. The arena is drawn in
+  perspective, so an affine scale is wrong; calibrate a full homography from
+  the six tower centres plus the two bridge ends via `homography_anchors:` in
+  `configs/live_play.yaml`. Provides both directions: pixel→tile for
+  perception, tile→pixel so a trained policy can deploy anywhere instead of
+  at one fixed configured point. Degenerate or inconsistent anchors are
+  rejected at config load, not mid-session.
+- **`src/live/vision.py`** — team-tinted health-bar segmentation, connected
+  components, and HP from bar fill. *Known fidelity loss:* a full bar has no
+  visible remainder, so "full HP" and "bar occluded" are the same pixels;
+  those detections are reported at full HP with `hp_confident=False`.
+- **`src/live/identify.py`** — card identity by template matching, narrowed
+  by the deck prior: a deck is 8 cards and reveals itself, so once all eight
+  are known the classifier chooses among eight, not 110. It reads the
+  revealed-card set straight off the opponent tracker rather than keeping a
+  second copy.
+- **`src/agent/opponent_tracker.py`** — opponent elixir and hand, *derived*
+  from observed play (start value + known regen + observed card costs, and
+  the deterministic 8-card cycle) rather than read. It consumes only what
+  perception reported and never touches engine state, so it is wrong exactly
+  when perception was wrong — the same failure mode a human has.
+
+Detector templates and annotated frames are not bundled: they are
+display-specific. `tests/live_frames.py` documents the fixture format and
+generates a synthetic frame; drop real annotated captures into
+`tests/fixtures/live/` and the test suite picks them up automatically.
+
+---
+
+## Simulator fidelity
+
+`docs/SIM_FIDELITY.md` is the audit of where the simulation diverges from
+real Clash Royale, what was fixed (charge mechanics, inferno ramp-up, stun
+resetting wind-ups, death spawns/damage, tunnelling, obstacle steering,
+continuous tornado pull, persistent rage zones), and what was deliberately
+left alone and why.
+
+### Card stats
+
+`configs/cards.yaml` holds **level-1 base Clash Royale values** — the same
+table `configs/arena.yaml`'s towers come from. Troops all scale on one
+per-level curve, so level-1 values preserve every real breakpoint; there is
+nothing to rescale.
+
+Keep it honest with:
+
+```bash
+python -m scripts.sync_card_stats            # per-card diff vs the real table
+python -m scripts.sync_card_stats --apply    # rewrite the syncable fields
+python -m scripts.sync_card_stats --refresh  # re-download the reference
+```
+
+The reference (`configs/reference_card_stats.json`) is a vendored
+distillation of [RoyaleAPI's `cr-api-data`](https://github.com/RoyaleAPI/cr-api-data)
+mirror of Supercell's card table. The tool only rewrites fields whose
+schemas align cleanly (`hp`, `damage`, `hit_speed`, `speed`, `count` — the
+ones breakpoints depend on) and reports the rest rather than guessing.
+
+**Any `--apply` is a balance change.** Re-establish the baseline afterwards,
+because every earlier win rate was measured against different physics:
+
+```bash
+python -m scripts.rebenchmark --matches 40
+```
+
+---
+
+## Live-play scope
+
+The optional live bridge uses screen capture and calibrated clicks only. It
+does not start matchmaking, read game memory, or access network traffic.
 
 ---
 

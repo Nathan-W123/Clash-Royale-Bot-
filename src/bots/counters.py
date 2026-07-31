@@ -14,9 +14,6 @@ COUNTERS: dict[str, list[str]] = {
     "mini_pekka": ["goblins", "skeletons", "knight"],
 }
 
-WIN_CONDITIONS = {"giant", "hog_rider", "balloon"}  # balloon not in catalog yet
-
-
 def pick_counter(threat_name: str, hand_names: set[str]) -> str | None:
     for counter in COUNTERS.get(threat_name, []):
         if counter in hand_names:

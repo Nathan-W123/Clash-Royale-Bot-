@@ -27,10 +27,13 @@ def tick_hero_abilities(engine: BattleEngine, dt: float, events: list[dict]) -> 
     for u in engine.units:
         if u.buff_until and engine.time >= u.buff_until:
             u.damage_multiplier = 1.0
+            u.speed_multiplier = 1.0
             u.buff_until = 0.0
         if u.shield_until and engine.time >= u.shield_until:
             u.shield_hp = 0.0
             u.shield_until = 0.0
+        if u.frozen_until and engine.time >= u.frozen_until:
+            u.frozen_until = 0.0
 
 
 def trigger_ability(hero: Unit, engine: BattleEngine, events: list[dict]) -> None:

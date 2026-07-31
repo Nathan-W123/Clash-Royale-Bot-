@@ -8,18 +8,18 @@ from src.agent.network import (
     masks_to_tensors,
     obs_to_tensors,
 )
-from src.agent.obs_layout import SCALAR_DIM, SPATIAL_CHANNELS
+from src.agent.obs_layout import RESTRICTED_SCALAR_DIM, SCALAR_DIM, SPATIAL_CHANNELS
 from src.simulator.constants import HAND_SIZE, PLACE_COLS, PLACE_ROWS
 
 N_CARDS = 16
 DEVICE = torch.device("cpu")
 
 
-def random_batch(rng, batch=8):
+def random_batch(rng, batch=8, scalar_dim=SCALAR_DIM):
     obs = {
         "spatial": rng.random((batch, SPATIAL_CHANNELS, PLACE_ROWS, PLACE_COLS)).astype(np.float32),
         "cards": rng.integers(0, N_CARDS, (batch, HAND_SIZE + 1)),
-        "vector": rng.random((batch, SCALAR_DIM)).astype(np.float32),
+        "vector": rng.random((batch, scalar_dim)).astype(np.float32),
     }
     card_mask = np.zeros((batch, N_CARD_CHOICES), bool)
     card_mask[:, 0] = True
@@ -89,5 +89,34 @@ def test_bc_loss_decreases_on_fixture():
         opt.zero_grad()
         loss.backward()
         opt.step()
-        losses.append(float(loss))
+        losses.append(loss.item())
     assert losses[-1] < losses[0] * 0.5
+
+
+def test_restricted_network_has_no_cnn_params():
+    net = make_network(N_CARDS, {"use_spatial": False})
+    assert not hasattr(net, "cnn")
+    assert not hasattr(net, "cnn_proj")
+    assert net.config.scalar_dim == RESTRICTED_SCALAR_DIM
+
+
+def test_restricted_network_ignores_spatial_content():
+    rng = np.random.default_rng(3)
+    net = make_network(N_CARDS, {"use_spatial": False})
+    obs_np, masks_np = random_batch(rng, batch=8, scalar_dim=RESTRICTED_SCALAR_DIM)
+    obs = obs_to_tensors(obs_np, DEVICE)
+    masks = masks_to_tensors(masks_np, DEVICE)
+    feat_a = net.trunk(obs)
+
+    obs_np["spatial"] = rng.random(obs_np["spatial"].shape).astype(np.float32) * 100.0
+    obs_b = obs_to_tensors(obs_np, DEVICE)
+    feat_b = net.trunk(obs_b)
+
+    torch.testing.assert_close(feat_a, feat_b)
+
+
+def test_full_network_default_config_unchanged():
+    net = make_network(N_CARDS)
+    assert net.config.use_spatial is True
+    assert net.config.scalar_dim == SCALAR_DIM
+    assert hasattr(net, "cnn")

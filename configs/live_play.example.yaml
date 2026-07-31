@@ -1,0 +1,100 @@
+# Copy this file to configs/live_play.yaml and calibrate it for your display.
+#
+# CALIBRATION CONTRACT — read before editing:
+#   * Every coordinate below is measured against ONE capture geometry, named
+#     by `reference_size`. At runtime they are rescaled to whatever the live
+#     capture actually is. Mixing coordinates from two different geometries in
+#     one file is the single easiest way to break this bridge, so if you
+#     re-measure anything, re-measure everything and update `reference_size`
+#     in the same edit.
+#   * `LiveConfig.validate()` rejects any coordinate outside `reference_size`,
+#     including ones the active `decision_mode` ignores. That check exists
+#     because stale coordinates otherwise sit dormant until someone switches
+#     mode, then send every tap off-screen.
+#   * Do NOT repeat a key in this file. YAML silently keeps the last
+#     occurrence, so a duplicate `reference_size` will override the one you
+#     think is in effect. `load_live_config` now rejects duplicates outright.
+#
+# Use `python -m src.live --diagnose` to capture one screenshot and print the
+# exact saturation/luma values match- and ready-detection will see, so you can
+# pick thresholds that actually separate in-match from the home screen.
+
+live:
+  transport: desktop
+  # "window" uses the game's client area, so the window's desktop position and
+  # size do not matter. Use a distinctive substring of the game's title.
+  desktop_capture: window
+  window_title: Clash Royale
+
+  # The portrait game area inside the window, after black side bars are
+  # trimmed automatically. Measure this from a real capture before using any
+  # coordinate below — everything else is relative to it.
+  reference_size: [556, 1028]
+
+  poll_seconds: 0.5
+  action_cooldown_seconds: 1.2
+
+  # A region that is colorful during a match and drab outside one. The elixir
+  # bar works well; a generic "arena patch" does not, because the home screen's
+  # castle artwork is also colorful and reads as in-match.
+  match_indicator: [160, 995, 350, 25]
+  match_min_saturation: 0.5
+
+  # Click centers for the four visible card slots, left to right.
+  card_slots: [[167, 917], [278, 917], [386, 917], [492, 917]]
+  # Bright artwork patches inside each card, used to estimate affordability.
+  card_ready_regions: [[140, 851, 55, 57], [250, 851, 55, 57], [358, 851, 55, 57], [464, 851, 55, 57]]
+  card_ready_min_luma: 55.0
+
+  # dynamic_slots: play whichever visible slot looks ready, at one fixed
+  # target. Ignores preset_deck/opening_hand/draw_order/placements entirely.
+  # This is the mode to start with — it needs the fewest correct measurements.
+  decision_mode: dynamic_slots
+  # Open ground in your own half, between the river and your towers. Avoid
+  # landing on a tower sprite: those tiles are not placeable, so the tap
+  # silently fails and the runner retries forever.
+  dynamic_target: [278, 550]
+  slot_priority: [0, 1, 2, 3]
+
+  # ---- arena perception / precise placement (optional) ----
+  # Pixel positions of known arena landmarks, in the same reference frame as
+  # everything above. These calibrate a full perspective homography (see
+  # src/live/homography.py), which is what maps screen pixels to arena tiles
+  # for perception and arena tiles back to pixels so a trained policy can
+  # deploy anywhere rather than at one fixed configured point.
+  #
+  # An affine scale is NOT sufficient here: the arena is drawn in
+  # perspective, so the far half is narrower than the near half.
+  #
+  # Measure the CENTRE of each landmark. At least four are required; using
+  # all eight (both halves plus both bridges) is what pins down the
+  # perspective term — anchors clustered in one half fit that half and drift
+  # badly in the other. Leave the whole block out to keep the legacy
+  # fixed-target behavior.
+  #
+  # "own" is the bottom seat (yours). Left/right are as seen on screen.
+  homography_anchors: {}
+  #   own_king:             [278, 830]
+  #   own_princess_left:    [120, 720]
+  #   own_princess_right:   [436, 720]
+  #   enemy_king:           [278, 190]
+  #   enemy_princess_left:  [150, 275]
+  #   enemy_princess_right: [406, 275]
+  #   bridge_left:          [140, 505]
+  #   bridge_right:         [416, 505]
+
+  # ---- known_deck mode only; ignored under dynamic_slots ----
+  # Must exactly match the deck selected in-game (order here is arbitrary).
+  preset_deck: [giant, musketeer, mini_pekka, minions, knight, goblins, fireball, cannon]
+  # The four cards visible immediately after the battle begins.
+  opening_hand: [giant, musketeer, mini_pekka, minions]
+  # The four cards queued behind them, in actual draw order.
+  draw_order: [knight, goblins, fireball, cannon]
+  # Per-card deploy targets, in the same reference frame as everything above.
+  # Left empty deliberately: there are no safe defaults, because these are
+  # physical positions on your display. Measure them before switching
+  # decision_mode to known_deck. Omit any card that should never be
+  # auto-played (e.g. spells) until its targeting is calibrated.
+  placements: {}
+  # Cards to try in order; only cards present in `placements` are playable.
+  priority: []

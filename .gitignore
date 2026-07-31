@@ -10,3 +10,8 @@ runs/
 *.egg-info/
 .pytest_cache/
 data/
+
+# Personal, machine-specific screen calibration. Create it from
+# configs/live_play.example.yaml; the coordinates only mean anything on the
+# display they were measured on.
+configs/live_play.yaml

@@ -34,10 +34,14 @@ stages:
     selfplay: true
     promote: null
 
+  # Beat one ladder deck at a time (FocusedRotationManager) while the agent's
+  # own deck is rebuilt from per-card scores (AdaptiveDeckBuilder), instead of
+  # sampling both decks independently every episode.
   - name: focused_ladder
     opponent_deck_pool: ladder_top50
     single_lane: null
     match_time: null
     opponents: [champion]
     selfplay: false
+    focused_rotation: true
     promote: null

@@ -9,7 +9,15 @@ from __future__ import annotations
 
 import numpy as np
 
-from src.simulator import combat, heroes, movement, targeting
+from src.simulator import (
+    collision,
+    combat,
+    heroes,
+    mechanics,
+    movement,
+    spell_effects,
+    targeting,
+)
 from src.simulator.cards import ArenaConfig, CardStats, load_cards
 from src.simulator.constants import TIME_EPS, CardType, MatchResult, Side
 from src.simulator.entities import PendingSpell, Tower, Unit
@@ -112,6 +120,10 @@ class BattleEngine:
             return False  # single-lane curriculum: left half closed entirely
         if card.type == CardType.SPELL:
             return True
+        if card.deploy_anywhere:
+            # Miner/Goblin Drill tunnel: the whole board is legal, which is
+            # the entire reason those cards exist.
+            return True
         # Perspective: own half for BOTTOM is below the river, for TOP above.
         # Closed band so the geometry is exactly mirror-symmetric (15 <-> 17).
         if a.river_y_min <= y <= a.river_y_max:
@@ -144,10 +156,14 @@ class BattleEngine:
         events: list[dict] = [{"type": "deploy", "side": side, "card": card.name,
                                "cost": card.cost, "x": x, "y": y}]
         if card.type == CardType.SPELL:
+            ticks = spell_effects.total_ticks(card.name)
+            zone_until = (self.time + card.spell_delay + spell_effects.RAGE_DURATION
+                          if card.name == "rage" else 0.0)
             self.spells.append(PendingSpell(
                 side=side, x=x, y=y, radius=card.spell_radius, damage=card.spell_damage,
                 tower_multiplier=card.tower_multiplier,
-                resolve_at=self.time + card.spell_delay, card_name=card.name))
+                resolve_at=self.time + card.spell_delay, card_name=card.name,
+                ticks_left=ticks, zone_until=zone_until))
             return events
         spawned = self.spawn_units(card, side, x, y, card.count)
         for u in spawned:
@@ -161,8 +177,10 @@ class BattleEngine:
         x: float,
         y: float,
         count: int | None = None,
+        hp_override: float | None = None,
     ) -> list[Unit]:
-        """Spawn troops/buildings at (x, y). Used by deploy and hero abilities."""
+        """Spawn troops/buildings at (x, y). Used by deploy, hero abilities,
+        and Clone (`hp_override` gives Clone's fragile 1-HP copies)."""
         count = count if count is not None else card.count
         offsets = _SWARM_OFFSETS.get(count) or [
             (float(dx), float(dy)) for dx, dy in self.rng.normal(0, 0.5, (count, 2))
@@ -176,10 +194,11 @@ class BattleEngine:
                 side=side,
                 x=min(max(x + dx, 0.0), self.arena.width - 0.01),
                 y=min(max(y + dy, 0.0), self.arena.height - 0.01),
-                hp=card.hp,
+                hp=hp_override if hp_override is not None else card.hp,
                 cooldown=card.hit_speed,
                 elixir_value=card.cost / max(count, 1),
                 expires_at=expires,
+                deployed_at=self.time,
             )
             self.units.append(u)
             self._by_id[u.id] = u
@@ -205,8 +224,32 @@ class BattleEngine:
         due = [s for s in self.spells if s.resolve_at <= self.time + TIME_EPS]
         self.spells = [s for s in self.spells if s.resolve_at > self.time + TIME_EPS]
         for s in due:
-            combat.resolve_spell(s, self.units_of(s.side.other),
-                                 self.towers_of(s.side.other), events)
+            if s.card_name == "rage":
+                # Self-buff: targets the caster's own units, deals no damage.
+                spell_effects.apply_rage(s, self, self.units_of(s.side))
+                spell_effects.reschedule(s, self)
+                continue
+            if s.card_name == "clone":
+                # Self-buff too: duplicates the caster's own units, no damage.
+                spell_effects.apply_clone(s, self, self.units_of(s.side))
+                continue
+            # Damage lands once per application for poison (that's the point
+            # of its ticks) but only on the first for the other persistent
+            # spells, whose later ticks carry the *effect*, not the hit.
+            if spell_effects.damages_this_tick(s):
+                combat.resolve_spell(s, self.units_of(s.side.other),
+                                     self.towers_of(s.side.other), events)
+            if s.card_name == "freeze":
+                spell_effects.apply_freeze(s, self, self.units_of(s.side.other))
+            elif s.card_name == "tornado":
+                spell_effects.apply_tornado(s, self, self.units_of(s.side.other))
+            # Zap/Lightning-style stuns reset charge, inferno ramp, and the
+            # attack wind-up; see mechanics.on_stun.
+            stats = self.cards.get(s.card_name)
+            if stats is not None and stats.stun_duration > 0:
+                mechanics.apply_stun(self, self.units_of(s.side.other),
+                                     s.x, s.y, s.radius, stats.stun_duration)
+            spell_effects.reschedule(s, self)
 
         # 3. Tower attacks
         for t in self.towers:
@@ -223,7 +266,7 @@ class BattleEngine:
 
         # 4. Unit targeting
         for u in self.units:
-            if u.hp <= 0:
+            if u.hp <= 0 or self._is_inactive(u):
                 continue
             tgt = self._by_id.get(u.target_id) if u.target_id else None
             if not targeting.unit_keeps_lock(u, tgt):
@@ -232,7 +275,7 @@ class BattleEngine:
 
         # 5. Movement
         for u in self.units:
-            if u.hp <= 0 or u.is_building:
+            if u.hp <= 0 or u.is_building or self._is_inactive(u):
                 continue
             tgt = self._by_id.get(u.target_id) if u.target_id else None
             if tgt is None:
@@ -240,19 +283,32 @@ class BattleEngine:
             reach = u.stats.range + u.radius + tgt.radius
             if targeting.dist(u.x, u.y, tgt.x, tgt.y) > reach:
                 wx, wy = movement.waypoint_toward(u, tgt.x, tgt.y, self.arena)
-                movement.step_toward(u, wx, wy, dt)
+                nx, ny = movement.next_position(
+                    u, wx, wy, dt, extra_speed=mechanics.charge_speed(u))
+                nx, ny = movement.avoid_obstacle(u, nx, ny, self.units, self.arena)
+                if collision.blocked(u, nx, ny, self.units):
+                    # Body-blocked: a banked charge is lost, which is what
+                    # makes a cheap blocker a real answer to a Prince.
+                    mechanics.break_charge(u)
+                else:
+                    moved = targeting.dist(u.x, u.y, nx, ny)
+                    u.x, u.y = nx, ny
+                    mechanics.advance_charge(u, moved)
 
         # 6. Unit attacks
         for u in self.units:
-            if u.hp <= 0:
+            if u.hp <= 0 or self._is_inactive(u):
                 continue
             u.cooldown = max(0.0, u.cooldown - dt)
             tgt = self._by_id.get(u.target_id) if u.target_id else None
+            mechanics.advance_ramp(u, u.target_id if tgt is not None else None, dt)
             if tgt is None or getattr(tgt, "hp", 0) <= 0 or u.cooldown > TIME_EPS:
                 continue
             reach = u.stats.range + u.radius + tgt.radius
             if targeting.dist(u.x, u.y, tgt.x, tgt.y) <= reach:
-                combat.apply_attack(u, tgt, self.units_of(u.side.other), events)
+                combat.apply_attack(u, tgt, self.units_of(u.side.other), events,
+                                    damage_scale=mechanics.attack_scale(u))
+                mechanics.on_attack(u)
                 u.cooldown = u.stats.hit_speed
 
         # 6b. Hero abilities
@@ -270,6 +326,7 @@ class BattleEngine:
         for u in gone:
             if u.hp <= 0:
                 heroes.on_unit_death(u, self, events)
+                mechanics.on_unit_death(u, self, events)
             self._by_id.pop(u.id, None)
         self.units = [u for u in self.units if u not in gone]
 
@@ -280,6 +337,15 @@ class BattleEngine:
 
     def _king_of(self, side: Side) -> Tower:
         return next(t for t in self.towers if t.side == side and t.is_king)
+
+    def _is_frozen(self, u: Unit) -> bool:
+        return bool(u.frozen_until) and self.time < u.frozen_until - TIME_EPS
+
+    def _is_deploying(self, u: Unit) -> bool:
+        return self.time < u.deployed_at + u.stats.deploy_time - TIME_EPS
+
+    def _is_inactive(self, u: Unit) -> bool:
+        return self._is_frozen(u) or self._is_deploying(u)
 
     def _check_result(self, events: list[dict]) -> None:
         bottom_king_dead = self._king_of(Side.BOTTOM).hp <= 0

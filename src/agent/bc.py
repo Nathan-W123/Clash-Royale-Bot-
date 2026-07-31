@@ -91,9 +91,22 @@ def collect_bot_matches(
     catalog: DeckCatalog | None = None,
     student: PolicyBot | None = None,
     expert_name: str = "champion",
+    tier=obs_layout.TIER_FULL,
+    use_spatial: bool | None = None,
+    focus_opponent: str | None = None,
+    focus_weight: float = 0.5,
 ) -> Dataset:
     """Bot-vs-bot rollouts (or student rollouts relabeled by the expert when
-    `student` is given — the DAgger case)."""
+    `student` is given — the DAgger case).
+
+    `focus_opponent` biases the *TOP-seat* opponent — the thing the BOTTOM
+    actor has to defend against/beat — toward a single archetype (e.g.
+    "rusher") a fraction `focus_weight` of the time, while BOTTOM keeps
+    cycling through the full round-robin of decks. This is for retargeting
+    a bootstrap/DAgger pass at a specific known weakness rather than
+    spreading data evenly across all archetypes.
+    """
+    tier = obs_layout.resolve_tier(use_spatial if use_spatial is not None else tier)
     catalog = catalog or DeckCatalog()
     arena = load_arena()
     card_to_id = {n: i for i, n in enumerate(load_cards())}
@@ -106,7 +119,10 @@ def collect_bot_matches(
 
     for i in range(n_matches):
         (bot_b_name, deck_b_name) = pairs[i % len(pairs)]
-        (bot_t_name, deck_t_name) = pairs[(i * 3 + 1) % len(pairs)]
+        if focus_opponent is not None and rng.random() < focus_weight:
+            bot_t_name, deck_t_name = focus_opponent, focus_opponent
+        else:
+            (bot_t_name, deck_t_name) = pairs[(i * 3 + 1) % len(pairs)]
         deck_b = catalog.resolve(deck_b_name)
         deck_t = catalog.resolve(deck_t_name)
         expert_b: Bot = get_bot(bot_b_name, catalog=catalog, deck_name=deck_b_name, rng=rng)
@@ -131,7 +147,7 @@ def collect_bot_matches(
                 elif record:
                     plays += 1
                 if record:
-                    obs = obs_layout.encode_obs(engine, side, card_to_id)
+                    obs = obs_layout.encode_obs(engine, side, card_to_id, tier)
                     data.add(obs, masks, *target)
 
                 # Advance the game with the *actor's* action (student on DAgger).
@@ -199,13 +215,28 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=512)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", default="checkpoints/bc_init.pt")
+    parser.add_argument("--tier", default=None, choices=list(obs_layout.TIERS),
+                        help="Observation tier: 'full' (simulator-only; reads opponent "
+                             "elixir), 'human' (live-legal target: spatial grid, no "
+                             "opponent elixir), 'restricted' (no spatial grid).")
+    parser.add_argument("--restricted", action="store_true",
+                        help="Deprecated alias for --tier restricted.")
+    parser.add_argument("--focus", default=None,
+                        help="Bias the TOP-seat opponent toward this archetype "
+                             "(e.g. 'rusher') for --focus-weight of matches, "
+                             "to retarget BC/DAgger at a known weakness.")
+    parser.add_argument("--focus-weight", type=float, default=0.5)
     args = parser.parse_args()
 
+    tier = obs_layout.resolve_tier(
+        args.tier or (obs_layout.TIER_RESTRICTED if args.restricted else obs_layout.TIER_FULL))
     card_names = list(load_cards().keys())
-    net = make_network(len(card_names))
+    net = make_network(len(card_names), {"tier": tier})
 
-    print(f"[bc] collecting {args.matches} expert matches...")
-    data = collect_bot_matches(args.matches, seed=args.seed)
+    print(f"[bc] collecting {args.matches} expert matches ({tier} tier)..."
+          + (f" ({args.focus_weight:.0%} vs {args.focus})" if args.focus else ""))
+    data = collect_bot_matches(args.matches, seed=args.seed, tier=tier,
+                               focus_opponent=args.focus, focus_weight=args.focus_weight)
     print(f"[bc] dataset: {len(data)} frames "
           f"({int((np.asarray(data.target_card) > 0).sum())} card plays)")
     losses = train_bc(net, data, epochs=args.epochs, lr=args.lr,
@@ -216,7 +247,8 @@ def main() -> None:
         student = PolicyBot(net, card_names, name="student")
         print(f"[bc] DAgger round {r + 1}: {args.dagger_matches} student rollouts...")
         extra = collect_bot_matches(args.dagger_matches, seed=args.seed + 1000 + r,
-                                    student=student)
+                                    student=student, tier=tier,
+                                    focus_opponent=args.focus, focus_weight=args.focus_weight)
         for key in ("spatial", "cards", "vector", "card_mask", "place_mask",
                     "target_card", "target_cell"):
             getattr(data, key).extend(getattr(extra, key))

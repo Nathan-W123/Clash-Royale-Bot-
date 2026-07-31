@@ -1,0 +1,78 @@
+{
+  "tag": "post-card-stat-sync",
+  "recorded_at": "2026-07-31T18:58:04+00:00",
+  "matches_per_opponent": 40,
+  "seed": 0,
+  "opponents": [
+    {
+      "bot": "rusher",
+      "deck": "rusher"
+    },
+    {
+      "bot": "control",
+      "deck": "control"
+    },
+    {
+      "bot": "siege",
+      "deck": "siege"
+    },
+    {
+      "bot": "beatdown",
+      "deck": "beatdown"
+    }
+  ],
+  "agents": {
+    "rusher": {
+      "win_rate": 0.6363636363636364,
+      "wins": 98,
+      "losses": 56,
+      "draws": 6,
+      "card_entropy": 1.9337081093350972,
+      "vs_bot": {
+        "rusher": 0.5588235294117647,
+        "control": 0.7,
+        "siege": 0.825,
+        "beatdown": 0.45
+      }
+    },
+    "control": {
+      "win_rate": 0.35668789808917195,
+      "wins": 56,
+      "losses": 101,
+      "draws": 3,
+      "card_entropy": 1.85361345455888,
+      "vs_bot": {
+        "rusher": 0.45,
+        "control": 0.43243243243243246,
+        "siege": 0.3,
+        "beatdown": 0.25
+      }
+    },
+    "siege": {
+      "win_rate": 0.379746835443038,
+      "wins": 60,
+      "losses": 98,
+      "draws": 2,
+      "card_entropy": 1.9007822590601136,
+      "vs_bot": {
+        "rusher": 0.25,
+        "control": 0.6153846153846154,
+        "siege": 0.38461538461538464,
+        "beatdown": 0.275
+      }
+    },
+    "beatdown": {
+      "win_rate": 0.6625,
+      "wins": 106,
+      "losses": 54,
+      "draws": 0,
+      "card_entropy": 1.9888756539826224,
+      "vs_bot": {
+        "rusher": 0.625,
+        "control": 0.6,
+        "siege": 0.875,
+        "beatdown": 0.55
+      }
+    }
+  }
+}

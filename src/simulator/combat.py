@@ -41,9 +41,17 @@ def apply_attack(
     target: Unit | Tower,
     enemy_units: list[Unit],
     events: list[dict],
+    damage_scale: float = 1.0,
 ) -> None:
-    """Deal one hit; splash attackers damage everything legal around the target."""
-    dmg = attacker.stats.damage
+    """Deal one hit; splash attackers damage everything legal around the target.
+
+    `damage_scale` carries the per-hit multipliers that live outside the
+    attacker's persistent state — charge and inferno ramp (see
+    `src.simulator.mechanics`) — so those mechanics don't have to smuggle
+    themselves through `damage_multiplier`, which belongs to Rage and hero
+    buffs and has a different lifetime.
+    """
+    dmg = attacker.stats.damage * damage_scale
     if isinstance(attacker, Unit):
         dmg *= attacker.damage_multiplier
     splash = getattr(attacker.stats, "splash_radius", 0.0)

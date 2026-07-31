@@ -51,3 +51,11 @@ PLACE_COLS = 9   # 18 / 2
 PLACE_ROWS = 16  # 32 / 2
 
 HAND_SIZE = 4
+
+# Seconds a freshly-deployed troop/building sits inert before it can target,
+# move, or attack — the real game's post-deploy animation lock. This is only
+# the fallback for cards that don't override it; per-card values live in
+# cards.yaml as `deploy_time`, because the spread matters tactically (a
+# mortar that is useful ~1s after landing is a very different card from one
+# that takes several seconds to wind up).
+DEFAULT_DEPLOY_TIME = 1.0

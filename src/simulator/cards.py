@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from functools import lru_cache
 from pathlib import Path
 
 import yaml
 
-from src.simulator.constants import CardType, TargetType
+from src.simulator.constants import DEFAULT_DEPLOY_TIME, CardType, TargetType
 
 CONFIG_DIR = Path(__file__).resolve().parents[2] / "configs"
 
@@ -33,11 +34,38 @@ class CardStats:
     count: int = 1                # units spawned per deploy (swarms)
     splash_radius: float = 0.0    # 0 = single target
     lifetime: float = 0.0         # buildings only; seconds until self-destruct
+    # Seconds after placement before this card can target, move, or attack.
+    # ~1s covers most of the roster; siege buildings (mortar, x_bow) and a few
+    # slow-winding troops take materially longer, which is a real tempo cost
+    # the agent should have to plan around. Override per card in cards.yaml.
+    deploy_time: float = DEFAULT_DEPLOY_TIME
+    # Unit-specific mechanics (#36). Zero/empty disables each one, so cards
+    # that don't have the mechanic need no entry in cards.yaml.
+    #   charge_*      Prince/Battle Ram/Dark Prince/Ram Rider, and the
+    #                 Bandit/Royal Ghost dash: move `charge_distance` tiles
+    #                 unimpeded, then hit harder and move faster until the
+    #                 charge is spent or broken.
+    #   ramp_up_*     Inferno Tower/Dragon: damage grows while locked on one
+    #                 target and resets on retarget or stun.
+    #   death_*       Lava Hound pups, Golem golemites, Balloon/Giant
+    #                 Skeleton death damage.
+    #   deploy_anywhere  Miner/Goblin Drill tunnel past placement rules.
+    charge_distance: float = 0.0
+    charge_damage_multiplier: float = 2.0
+    charge_speed_multiplier: float = 1.6
+    ramp_up_time: float = 0.0
+    ramp_up_multiplier: float = 1.0
+    death_spawn: str = ""
+    death_spawn_count: int = 0
+    death_damage: float = 0.0
+    death_damage_radius: float = 0.0
+    deploy_anywhere: bool = False
     # Spell fields
     spell_damage: float = 0.0
     spell_radius: float = 0.0
     spell_delay: float = 0.0
     tower_multiplier: float = 1.0
+    stun_duration: float = 0.0    # zap/lightning: brief stun that resets wind-ups
     # Hero / evolution metadata
     is_hero: bool = False
     is_evolution: bool = False
@@ -82,9 +110,15 @@ def _load_yaml_cards(path: Path) -> dict[str, CardStats]:
     return {name: _parse_card(name, spec) for name, spec in raw.items()}
 
 
-def load_cards(path: Path | None = None) -> dict[str, CardStats]:
-    """Load base cards, heroes, and build evolution variants."""
-    base_path = path or CONFIG_DIR / "cards.yaml"
+@lru_cache(maxsize=8)
+def _load_cards_cached(base_path: Path) -> dict[str, CardStats]:
+    """Parse-once backing store for `load_cards`.
+
+    `BattleEngine.__init__` calls `load_cards()`, so this ran on every engine
+    construction — i.e. every episode reset, times every parallel env. Parsing
+    ~1500 lines of YAML per reset was a large share of training wall-clock for
+    data that never changes within a run.
+    """
     cards = _load_yaml_cards(base_path)
     cards.update(_load_yaml_cards(CONFIG_DIR / "heroes.yaml"))
 
@@ -109,6 +143,16 @@ def load_cards(path: Path | None = None) -> dict[str, CardStats]:
             cards[alias] = replace(cards[canonical], name=alias)
 
     return cards
+
+
+def load_cards(path: Path | None = None) -> dict[str, CardStats]:
+    """Load base cards, heroes, and build evolution variants.
+
+    Returns a fresh dict each call (CardStats itself is frozen, so the values
+    are safe to share) — callers that mutate the mapping must not corrupt the
+    cache behind it.
+    """
+    return dict(_load_cards_cached(path or CONFIG_DIR / "cards.yaml"))
 
 
 def load_decks(path: Path | None = None) -> dict[str, list[str]]:
@@ -164,7 +208,9 @@ class ArenaConfig:
     tiebreaker: str
 
 
+@lru_cache(maxsize=8)
 def load_arena(path: Path | None = None) -> ArenaConfig:
+    """Cached: ArenaConfig is frozen, and this is re-read per engine build."""
     path = path or CONFIG_DIR / "arena.yaml"
     raw = yaml.safe_load(path.read_text())
     a, t, e, c = raw["arena"], raw["towers"], raw["elixir"], raw["clock"]

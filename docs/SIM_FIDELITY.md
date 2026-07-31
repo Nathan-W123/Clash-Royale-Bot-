@@ -134,19 +134,50 @@ rewrite it with `--apply`.
 
 It deliberately splits the fields:
 
-- **auto-syncable** (`hp`, `damage`, `hit_speed`, `speed`, `count`) — one
-  upstream number, one meaning, same units; and these are the fields
-  breakpoints depend on.
-- **needs review** (`range`, `sight_range`, `splash_radius`, `spell_radius`,
-  `tower_multiplier`) — upstream splits across objects this simulator
-  flattens. A unit's splash lives on its *projectile*, so upstream reports
-  `area_damage_radius: 0` for Wizard and Sparky; Arrows' upstream radius is
-  its projectile body, not its blast. Syncing these blindly would replace
-  correct values with zeros and call it an improvement.
+- **auto-syncable** (`hp`, `damage`, `hit_speed`, `speed`, `count`,
+  `splash_radius`, `spell_radius`, `tower_multiplier`) — resolvable to one
+  unambiguous upstream number, and the fields breakpoints depend on.
+- **needs review** (`range`, `sight_range`) — upstream measures to the
+  target's edge; this simulator adds both body radii at reach time. Not the
+  same quantity, so copying would change every engagement distance.
 - **never synced** — the effect-spells this simulator implements explicitly
-  (rage, clone, graveyard, poison, tornado, freeze, earthquake), and nine
+  (rage, clone, graveyard, poison, tornado, freeze, earthquake), thirteen
   cards whose upstream row describes a different entity than ours (spawner
-  buildings, Rascals, Princess).
+  buildings, delivery spells, Rascals, Princess), and a handful of
+  per-field opt-outs where one number does not map but the rest do.
+
+### Following the projectile link
+
+Upstream splits an attack across a character row and the *projectile* it
+fires, which is why `area_damage_radius` reads 0 for Wizard, Bowler and
+Bomber. `distil()` follows that link, gated on the projectile's
+`aoe_to_ground` / `aoe_to_air` flags so a single-target projectile's own
+body radius is never mistaken for a blast — without that check, Musketeer
+and Princess would acquire splash they do not have.
+
+That converted most of the review backlog into exact values, and turned up
+mechanics this simulator was missing outright: **Witch, Mortar, Bomb Tower,
+Wall Breakers, Royal Ghost and Skeleton Dragons all had no splash at all.**
+Six more had the wrong radius (Mega Knight 2.5 -> 1.3, Sparky 2.5 -> 1.8,
+Executioner 2.0 -> 1.0, Dark Prince 2.0 -> 1.1, Bowler 2.0 -> 1.8, Baby
+Dragon 1.5 -> 1.2). Zap and Lightning got their real radii (2.5 and 3.5),
+and every spell's crown-tower multiplier is now per-card rather than a flat
+0.35 guess (Rocket 0.25, Log 0.20, Fireball/Arrows/Zap/Lightning 0.30).
+
+Three deliberate opt-outs, because the link resolves to something that is
+not splash:
+
+- **Electro Dragon** — chain lightning, no upstream radius at all. Syncing
+  would silently make it single-target; the 2.0 here is a stand-in.
+- **Hunter** — a 10-pellet shotgun (`multiple_projectiles: 10`), each pellet
+  0.07 tiles. A spread, not a blast.
+- **Magic Archer** — a piercing shot along a line.
+
+And one guard worth keeping: an *absent* `crown_tower_damage_percent` is not
+"no reduction". Those rows carry `deflect_behaviour: UseSpellsTowerDamageMul`
+— "apply the game-wide spell multiplier", which this table does not contain.
+Reporting it as 1.0 would have handed Barbarian Barrel and Royal Delivery
+full tower damage, so a missing value is treated as unknown and skipped.
 
 **Applied 2026-07-31.** The 211 auto-syncable stat lines were written; the
 tool now reports zero auto-syncable differences remaining. The ~93 review
@@ -206,12 +237,13 @@ and the delay is ~1s. Skipped.
 
 ## What to do next
 
-1. **The ~93 review fields** (`range`, `sight_range`, `splash_radius`,
-   `spell_radius`, `tower_multiplier`). These need per-card judgement because
-   upstream splits what this simulator flattens — a unit's splash lives on
-   its projectile, so upstream reports 0 for Wizard and Sparky. Run
-   `python -m scripts.sync_card_stats` to see them; resolve by hand or by
-   teaching `distil()` to follow the projectile link, then re-sync.
+1. **The remaining `range` / `sight_range` fields** (~64). These are the last
+   category still held back, and for a real reason: upstream measures range
+   to the target's *edge*, while `BattleEngine.tick` computes
+   `stats.range + attacker.radius + target.radius`. The two are not the same
+   quantity, so a blind copy would change every engagement distance in the
+   game. Settling it means deciding the convention once and converting, not
+   copying.
 2. **Electro-family on-hit stuns** — smallest remaining *mechanics* fix with
    real decision relevance, and the hook already exists.
 3. **Real-match error analysis** — once the live bridge runs a `human`-tier

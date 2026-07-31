@@ -56,20 +56,50 @@ UPSTREAM = "https://royaleapi.github.io/cr-api-data/json/cards_stats.json"
 #
 # Split by how well the two schemas line up:
 #
-# SAFE — one upstream number, one meaning, same units. These are also the
+# SAFE — resolvable to one unambiguous upstream number. These are also the
 # fields breakpoints depend on, so they are what actually matters.
 #
-# REVIEW — upstream splits across objects that this simulator flattens.
-# A unit's splash lives on its *projectile*, not the character, so upstream
-# reports `area_damage_radius: 0` for Wizard and Sparky; a spell's radius may
-# be the projectile's own body rather than its area of effect (upstream gives
-# Arrows a 1.4-tile radius, which is not its blast). Syncing these blindly
-# would replace correct values with zeros and call it a fidelity improvement.
-# Reported, never auto-applied, unless --include-review is passed.
-SAFE_UNIT_FIELDS = ("hp", "damage", "hit_speed", "speed", "count")
-REVIEW_UNIT_FIELDS = ("range", "sight_range", "splash_radius")
-SAFE_SPELL_FIELDS = ("spell_damage",)
-REVIEW_SPELL_FIELDS = ("spell_radius", "tower_multiplier")
+# `splash_radius`, `spell_radius` and `tower_multiplier` were initially in
+# REVIEW because upstream splits an attack across a character row and its
+# *projectile* row: `area_damage_radius` is 0 for Wizard and Bowler, and a
+# spell's damage and crown-tower reduction can sit on either object.
+# `distil()` now follows that link (see `_splash` and `_spell_row`), which
+# resolves them exactly — and incidentally found that Witch's 1.0 splash was
+# missing from this simulator entirely. The handful of cards whose geometry
+# genuinely does not map are handled per-field by FIELD_EXCLUSIONS rather
+# than by holding back the whole category.
+#
+# REVIEW — still genuinely ambiguous. `range`/`sight_range` differ by
+# convention: upstream measures to the target's edge, this simulator adds
+# both body radii in `BattleEngine.tick`, so the two are not the same
+# quantity and a blind copy would silently change every engagement distance.
+SAFE_UNIT_FIELDS = ("hp", "damage", "hit_speed", "speed", "count", "splash_radius")
+REVIEW_UNIT_FIELDS = ("range", "sight_range")
+SAFE_SPELL_FIELDS = ("spell_damage", "spell_radius", "tower_multiplier")
+REVIEW_SPELL_FIELDS = ()
+
+# Per-field opt-outs, for cards where one number does not map but the rest do.
+FIELD_EXCLUSIONS: dict[str, frozenset[str]] = {
+    # Arrows is a *volley*: upstream's 1.4 is one arrow's blast, and the
+    # spread across the target area lives in the spawn pattern, not the
+    # table. The flattened 4.0-tile area this simulator uses is correct;
+    # its damage (48) is not affected and does sync.
+    "arrows": frozenset({"spell_radius"}),
+    # Rolling projectiles: a swept 1.95x0.6-tile rectangle travelling 10
+    # tiles, which this simulator approximates as one circle. Not the same
+    # shape, so the radius is a modelling choice rather than a fact.
+    "log": frozenset({"spell_radius"}),
+    "barbarian_barrel": frozenset({"spell_radius"}),
+    # Chain lightning, not area damage: upstream carries no radius at all, so
+    # syncing would silently turn Electro Dragon single-target. This
+    # simulator's 2.0 splash is a deliberate stand-in for the chain.
+    "electro_dragon": frozenset({"splash_radius"}),
+    # Shotguns and piercing shots. Hunter fires 10 pellets of 0.07 radius
+    # each; Magic Archer's arrow pierces along a line. Neither is a blast,
+    # and copying the per-projectile body radius would imply one.
+    "hunter": frozenset({"splash_radius"}),
+    "magic_archer": frozenset({"splash_radius"}),
+}
 
 UNIT_FIELDS = SAFE_UNIT_FIELDS + REVIEW_UNIT_FIELDS
 SPELL_FIELDS = SAFE_SPELL_FIELDS + REVIEW_SPELL_FIELDS
@@ -133,6 +163,25 @@ def _damage(row: dict, projectiles: dict) -> float:
     return float(dmg)
 
 
+def _splash(row: dict, projectiles: dict) -> float:
+    """Area-damage radius, following the character -> projectile link.
+
+    A ranged splash unit carries its blast on the projectile it fires, so the
+    character row reports `area_damage_radius: 0` for Wizard, Bomber, Bowler
+    and friends. The projectile's `aoe_to_ground` / `aoe_to_air` flags are
+    what distinguish a blast radius from a single-target projectile's own
+    body — without that check, Musketeer and Princess would pick up splash
+    they do not have.
+    """
+    direct = row.get("area_damage_radius") or 0
+    if direct:
+        return direct / 1000
+    p = projectiles.get(row.get("projectile") or "")
+    if p and (p.get("aoe_to_ground") or p.get("aoe_to_air")):
+        return (p.get("radius") or 0) / 1000
+    return 0.0
+
+
 def distil(raw: dict) -> dict:
     """Upstream dump -> the small table this project actually consumes."""
     chars = {c["name"]: c for c in raw["characters"] if c.get("name")}
@@ -156,7 +205,7 @@ def distil(raw: dict) -> dict:
             # Upstream speed is in sixtieths of a tile per second.
             "speed": (c.get("speed") or 0) / 60.0,
             "count": troop.get("summon_number") or 1,
-            "splash_radius": (c.get("area_damage_radius") or 0) / 1000,
+            "splash_radius": _splash(c, projectiles),
         }
     for key, b in buildings.items():
         out[key] = {
@@ -168,7 +217,7 @@ def distil(raw: dict) -> dict:
             "sight_range": (b.get("sight_range") or 0) / 1000,
             "speed": 0.0,
             "count": 1,
-            "splash_radius": (b.get("area_damage_radius") or 0) / 1000,
+            "splash_radius": _splash(b, projectiles),
         }
     for key, s in spells.items():
         row = _spell_row(s, projectiles)
@@ -197,20 +246,32 @@ def distil(raw: dict) -> dict:
 
 
 def _spell_row(row: dict, projectiles: dict) -> dict:
-    radius = (row.get("radius") or 0) / 1000
-    damage = _damage(row, projectiles)
-    if row.get("projectile"):
-        p = projectiles.get(row["projectile"])
-        if p and not radius:
-            radius = (p.get("radius") or 0) / 1000
-    crown = row.get("crown_tower_damage_percent") or 0
+    """Flatten a spell across its own row and its projectile.
+
+    A spell can be described entirely on one object (Zap: radius and crown
+    reduction on the spell row) or split across two (Lightning: radius on the
+    spell row, damage and crown reduction on `LighningSpell`). Each field is
+    therefore resolved independently, taking whichever object actually
+    carries it, rather than picking one row and hoping.
+    """
+    projectile = projectiles.get(row.get("projectile") or "") or {}
+
+    def pick(field):
+        value = row.get(field)
+        return value if value else projectile.get(field)
+
+    radius = (pick("radius") or 0) / 1000
+    # Upstream states the *reduction* against crown towers as a negative
+    # percentage. An absent value is not "no reduction": those rows carry
+    # `deflect_behaviour: UseSpellsTowerDamageMul`, i.e. "apply the game-wide
+    # spell multiplier", which this table does not contain. Reporting it as
+    # 1.0 would hand Barbarian Barrel and Royal Delivery full tower damage.
+    crown = pick("crown_tower_damage_percent")
     return {
         "kind": "spell",
-        "spell_damage": float(damage),
+        "spell_damage": _damage(row, projectiles),
         "spell_radius": float(radius),
-        # Upstream states the *reduction* against crown towers as a negative
-        # percentage; the simulator stores the surviving fraction.
-        "tower_multiplier": round(1.0 + crown / 100.0, 3),
+        "tower_multiplier": round(1.0 + crown / 100.0, 3) if crown else None,
     }
 
 
@@ -258,8 +319,11 @@ def diff(reference: dict, tolerance: float = 0.02, include_review: bool = False)
         safe = SAFE_SPELL_FIELDS if spell else SAFE_UNIT_FIELDS
         review = REVIEW_SPELL_FIELDS if spell else REVIEW_UNIT_FIELDS
 
+        excluded = FIELD_EXCLUSIONS.get(key, frozenset())
         changed, flagged = {}, {}
         for f in safe + review:
+            if f in excluded or ref.get(f) is None:
+                continue   # None = upstream has no value for it, not zero
             ours = float(getattr(card, f))
             theirs = float(ref[f])
             if abs(ours - theirs) <= tolerance * max(abs(theirs), 1.0):
@@ -316,35 +380,65 @@ def report(rows: list[dict], reference: dict) -> None:
 # ------------------------------------------------------------------ apply
 
 
+def _render(value: float) -> str:
+    return f"{value:g}" if value % 1 else str(int(value))
+
+
 def apply(rows: list[dict]) -> int:
-    """Rewrite only the changed stat lines, in place, preserving comments."""
-    text = CARDS_YAML.read_text(encoding="utf-8")
-    lines = text.split("\n")
+    """Rewrite the changed stat lines in place, preserving comments.
+
+    Fields absent from a card's block are *appended* rather than skipped.
+    That matters: a building like Mortar has no `splash_radius:` line at all,
+    so a rewrite-only pass would silently drop the very corrections that add
+    a mechanic the card was missing.
+    """
+    lines = CARDS_YAML.read_text(encoding="utf-8").split("\n")
     edits = {r["card"]: r["fields"] for r in rows if r["status"] == "differs"}
     if not edits:
         return 0
 
+    out: list[str] = []
     current: str | None = None
+    pending: dict[str, tuple[float, float]] = {}
+    indent = "  "
     changed = 0
-    for i, line in enumerate(lines):
+
+    def flush() -> None:
+        """Append fields the block never declared, before leaving it."""
+        nonlocal changed
+        while out and not out[-1].strip():
+            out.pop()          # keep the appended lines inside the block
+        for name, (_, value) in pending.items():
+            out.append(f"{indent}{name}: {_render(value)}")
+            changed += 1
+        pending.clear()
+
+    for line in lines:
         header = re.match(r"^([a-z_0-9]+):\s*$", line)
         if header:
+            if current in edits:
+                flush()
+                out.append("")
             current = header.group(1)
+            pending = dict(edits.get(current, {}))
+            out.append(line)
             continue
-        if current not in edits:
-            continue
-        field = re.match(r"^(\s+)([a-z_]+):\s*([^#\n]*?)(\s*#.*)?$", line)
-        if not field:
-            continue
-        indent, name, _, comment = field.groups()
-        if name not in edits[current]:
-            continue
-        value = edits[current][name][1]
-        rendered = f"{value:g}" if value % 1 else str(int(value))
-        lines[i] = f"{indent}{name}: {rendered}{comment or ''}"
-        changed += 1
 
-    CARDS_YAML.write_text("\n".join(lines), encoding="utf-8")
+        field = re.match(r"^(\s+)([a-z_]+):\s*([^#\n]*?)(\s*#.*)?$", line)
+        if field and current in edits and field.group(2) in pending:
+            lead, name, _, comment = field.groups()
+            indent = lead
+            value = pending.pop(name)[1]
+            out.append(f"{lead}{name}: {_render(value)}{comment or ''}")
+            changed += 1
+            continue
+        out.append(line)
+
+    if current in edits:
+        flush()
+        out.append("")
+
+    CARDS_YAML.write_text("\n".join(out), encoding="utf-8")
     return changed
 
 

@@ -39,7 +39,7 @@
    "range": 3.5,
    "sight_range": 5.5,
    "speed": 1.5,
-   "splash_radius": 0.0
+   "splash_radius": 1.2
   },
   "balloon": {
    "count": 1,
@@ -67,7 +67,7 @@
    "kind": "spell",
    "spell_damage": 151.0,
    "spell_radius": 0.0,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "barbarian_hut": {
    "count": 1,
@@ -133,7 +133,7 @@
    "range": 6.0,
    "sight_range": 6.0,
    "speed": 0.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.5
   },
   "bomber": {
    "count": 1,
@@ -144,7 +144,7 @@
    "range": 4.5,
    "sight_range": 5.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.5
   },
   "bowler": {
    "count": 1,
@@ -155,7 +155,7 @@
    "range": 4.0,
    "sight_range": 5.5,
    "speed": 0.75,
-   "splash_radius": 0.0
+   "splash_radius": 1.8
   },
   "cannon": {
    "count": 1,
@@ -183,7 +183,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 3.0,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "dark_prince": {
    "count": 1,
@@ -211,7 +211,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 3.5,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "electro_dragon": {
    "count": 1,
@@ -288,7 +288,7 @@
    "range": 4.5,
    "sight_range": 5.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.0
   },
   "fire_spirit": {
    "count": 1,
@@ -299,13 +299,13 @@
    "range": 2.0,
    "sight_range": 5.5,
    "speed": 2.0,
-   "splash_radius": 0.0
+   "splash_radius": 2.3
   },
   "fire_spirits": {
    "kind": "spell",
    "spell_damage": 81.0,
    "spell_radius": 2.3,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "fireball": {
    "kind": "spell",
@@ -395,7 +395,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 1.5,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "goblin_cage": {
    "count": 1,
@@ -489,7 +489,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 4.0,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "guards": {
    "count": 3,
@@ -506,7 +506,7 @@
    "kind": "spell",
    "spell_damage": 52.0,
    "spell_radius": 1.5,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "hog_rider": {
    "count": 1,
@@ -550,7 +550,7 @@
    "range": 2.5,
    "sight_range": 5.5,
    "speed": 2.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.5
   },
   "ice_wizard": {
    "count": 1,
@@ -561,7 +561,7 @@
    "range": 5.5,
    "sight_range": 5.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.0
   },
   "inferno_dragon": {
    "count": 1,
@@ -611,7 +611,7 @@
    "kind": "spell",
    "spell_damage": 660.0,
    "spell_radius": 3.5,
-   "tower_multiplier": 1.0
+   "tower_multiplier": 0.3
   },
   "log": {
    "kind": "spell",
@@ -639,7 +639,7 @@
    "range": 7.0,
    "sight_range": 7.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 0.25
   },
   "mega_knight": {
    "count": 1,
@@ -738,7 +738,7 @@
    "range": 11.5,
    "sight_range": 11.5,
    "speed": 0.0,
-   "splash_radius": 0.0
+   "splash_radius": 2.0
   },
   "mother_witch": {
    "count": 1,
@@ -810,7 +810,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 3.5,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "prince": {
    "count": 1,
@@ -838,7 +838,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 3.0,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "raging_prince": {
    "count": 1,
@@ -883,7 +883,7 @@
    "kind": "spell",
    "spell_damage": 171.0,
    "spell_radius": 3.0,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "royal_ghost": {
    "count": 1,
@@ -971,7 +971,7 @@
    "range": 3.5,
    "sight_range": 5.5,
    "speed": 1.5,
-   "splash_radius": 0.0
+   "splash_radius": 0.8
   },
   "skeleton_king": {
    "count": 1,
@@ -1004,7 +1004,7 @@
    "range": 5.0,
    "sight_range": 5.0,
    "speed": 0.75,
-   "splash_radius": 0.0
+   "splash_radius": 1.8
   },
   "spear_goblins": {
    "count": 3,
@@ -1026,7 +1026,7 @@
    "range": 5.0,
    "sight_range": 5.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 0.25
   },
   "super_ice_golem": {
    "count": 1,
@@ -1059,7 +1059,7 @@
    "range": 7.0,
    "sight_range": 7.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 0.25
   },
   "super_mini_pekka": {
    "count": 1,
@@ -1131,7 +1131,7 @@
    "kind": "spell",
    "spell_damage": 0.0,
    "spell_radius": 5.5,
-   "tower_multiplier": 1.0
+   "tower_multiplier": null
   },
   "valkyrie": {
    "count": 1,
@@ -1164,7 +1164,7 @@
    "range": 5.5,
    "sight_range": 5.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.0
   },
   "wizard": {
    "count": 1,
@@ -1175,7 +1175,7 @@
    "range": 5.5,
    "sight_range": 5.5,
    "speed": 1.0,
-   "splash_radius": 0.0
+   "splash_radius": 1.5
   },
   "x_bow": {
    "count": 1,

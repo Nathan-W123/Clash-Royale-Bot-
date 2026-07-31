@@ -21,13 +21,25 @@ from src.simulator.constants import PLACE_COLS, Side
 from src.simulator.engine import BattleEngine
 
 
-def save_checkpoint(net: PolicyNetwork, card_names: list[str], path: Path) -> None:
+def save_checkpoint(net: PolicyNetwork, card_names: list[str], path: Path,
+                    card_levels=None) -> None:
+    """Persist a policy.
+
+    `card_levels` is recorded as provenance, not as something the network
+    needs: a policy trained against level-13 stats has learned level-13
+    breakpoints, and running it live against a level-9 collection would
+    quietly mean a different game. Storing it lets the live bridge check.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save({
+    payload = {
         "state_dict": net.state_dict(),
         "config": asdict(net.config),
         "card_names": list(card_names),
-    }, path)
+    }
+    if card_levels is not None:
+        payload["card_levels"] = (card_levels.to_dict()
+                                  if hasattr(card_levels, "to_dict") else dict(card_levels))
+    torch.save(payload, path)
 
 
 def load_checkpoint(path: Path, device: str = "cpu") -> tuple[PolicyNetwork, list[str]]:
@@ -39,6 +51,16 @@ def load_checkpoint(path: Path, device: str = "cpu") -> tuple[PolicyNetwork, lis
     net.load_state_dict(ckpt["state_dict"])
     net.eval()
     return net, ckpt["card_names"]
+
+
+def checkpoint_card_levels(path: Path):
+    """The `CardLevels` a checkpoint was trained under, or None if it predates
+    the feature (in which case it is level 1 — what `cards.yaml` holds)."""
+    from src.simulator.levels import CardLevels
+
+    ckpt = torch.load(Path(path), map_location="cpu", weights_only=False)
+    raw = ckpt.get("card_levels")
+    return CardLevels.from_dict(raw) if raw else CardLevels()
 
 
 def _obs_and_masks(
@@ -178,17 +200,41 @@ class PolicyBot:
         return None if action is None else (action.slot, action.x, action.y)
 
     def batch_key(self):
-        """Envs whose opponents share a key can be evaluated in one forward.
-
-        Returns None for recurrent policies: `policy_actions_batched` has no
-        hidden state to thread, so batching one would silently play it as if
-        it had no memory. `SyncVecEnv` treats None as "resolve per env", which
-        routes back through `decide` and its per-match memory. Slower, but
-        correct — and correctness is not negotiable against a 7x speedup.
-        """
-        if self.net.config.use_recurrence:
-            return None
+        """Envs whose opponents share a key can be evaluated in one forward."""
         return (id(self.net), self.deterministic)
+
+    def batched_rows(self, engines, side: Side):
+        """Actions for many engines in one forward, memory included.
+
+        Recurrent policies cannot use the plain `policy_actions_batched`
+        path — it has no hidden state to thread, so it would play them as if
+        they had none. Rather than give up the ~7x batching win, each
+        engine's memory is gathered, stacked into a single sequence step, and
+        scattered back afterwards.
+        """
+        if not self.net.config.use_recurrence:
+            return policy_actions_batched(self.net, engines, side, self.card_to_id,
+                                          deterministic=self.deterministic)
+        device = next(self.net.parameters()).device
+        keys = [(id(e), int(side)) for e in engines]
+        hiddens = []
+        for engine, key in zip(engines, keys):
+            h = self._hidden.get(key)
+            if h is None or engine.time < self._last_time.get(key, -1.0):
+                h = self.net.initial_hidden(1, device)
+            hiddens.append(h)
+            self._last_time[key] = engine.time
+        hidden = torch.cat(hiddens, dim=1)
+
+        pairs = [_obs_and_masks(self.net, e, side, self.card_to_id) for e in engines]
+        obs = {k: np.stack([o[k] for o, _ in pairs]) for k in pairs[0][0]}
+        masks = {k: np.stack([m[k] for _, m in pairs]) for k in pairs[0][1]}
+        actions, _, _, hidden = self.net.act_recurrent(
+            obs_to_tensors(obs, device), masks_to_tensors(masks, device),
+            hidden, None, deterministic=self.deterministic)
+        for i, key in enumerate(keys):
+            self._hidden[key] = hidden[:, i:i + 1].contiguous()
+        return actions.cpu().numpy()
 
 
 class BotOpponent:

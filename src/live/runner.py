@@ -29,7 +29,18 @@ class HandCycle:
 
     @classmethod
     def from_config(cls, config: LiveConfig) -> "HandCycle":
-        return cls(list(config.opening_hand), list(config.draw_order))
+        """Seed the cycle from whichever deck the config actually specifies.
+
+        `known_deck` mode calibrates `opening_hand` + `draw_order` explicitly.
+        `policy` mode configures `deck` instead, where the listed order *is*
+        the cycle: first four in hand, rest queued. Without this fallback the
+        cycle would be empty in policy mode and every hand read would be
+        blank.
+        """
+        if config.opening_hand:
+            return cls(list(config.opening_hand), list(config.draw_order))
+        deck = list(config.deck) or list(config.preset_deck)
+        return cls(deck[:4], deck[4:])
 
     def play(self, slot: int) -> str:
         card = self.hand[slot]
@@ -45,7 +56,8 @@ class LiveMatchRunner:
     match indicator is visible, and only when launched with ``armed=True``.
     """
 
-    def __init__(self, config: LiveConfig, device: LiveDevice, armed: bool = False, log: Callable[[str], None] = print):
+    def __init__(self, config: LiveConfig, device: LiveDevice, armed: bool = False,
+                 log: Callable[[str], None] = print, driver=None):
         self.config = config
         self.device = device
         self.armed = armed
@@ -57,6 +69,53 @@ class LiveMatchRunner:
         # None when `homography_anchors` isn't calibrated; the runner then
         # keeps its legacy fixed-target behaviour.
         self.homography = config.homography()
+        # A `PolicyDriver` (src/live/bridge.py) when running a checkpoint.
+        self.driver = driver
+        self._match_started_at = 0.0
+        self._degraded = False
+
+    # --------------------------------------------------------- perception
+
+    def perceive(self, image) -> "object | None":
+        """Assemble a `LiveObservation` from one frame, or None if the frame
+        cannot be read well enough to act on.
+
+        Returning None is deliberate: a fabricated observation is worse than
+        no decision. If own elixir cannot be read, every affordability mask
+        downstream is invented, and the policy would confidently play cards
+        that are not available.
+        """
+        from src.live.bridge import LiveObservation, PerceivedUnit
+        from src.live.vision import TEAM_HOSTILE, detect_units, read_elixir
+
+        config = self.config
+        if config.elixir_bar is None or self.homography is None:
+            return None
+        elixir = read_elixir(image, scaled_rect(config, config.elixir_bar, image.size))
+        if elixir is None:
+            return None
+
+        homography = self.homography.scaled_to(config.reference_size, image.size)
+        units = []
+        try:
+            from src.simulator.cards import load_arena
+            for d in detect_units(image, homography, arena=load_arena()):
+                units.append(PerceivedUnit(
+                    card="", tile_x=d.tile_x, tile_y=d.tile_y,
+                    hostile=d.team == TEAM_HOSTILE,
+                    hp_fraction=d.hp_fraction, hp_confident=d.hp_confident))
+        except ValueError:
+            # A degenerate projection is recoverable — act on hand and elixir
+            # alone this frame rather than dropping the whole decision.
+            units = []
+
+        return LiveObservation(
+            hand=list(self.hand.hand),
+            next_card=self.hand.next_cards[0] if self.hand.next_cards else "",
+            own_elixir=elixir,
+            match_time=max(0.0, time.monotonic() - self._match_started_at),
+            units=units,
+        )
 
     def tile_to_pixel(self, tile: tuple[float, float],
                       image_size: tuple[int, int]) -> tuple[int, int] | None:
@@ -111,10 +170,16 @@ class LiveMatchRunner:
         if in_match and not self._was_in_match:
             self.hand = HandCycle.from_config(self.config)
             self._last_logged_choice = None
+            self._match_started_at = time.monotonic()
+            self._degraded = False
             self.log("Match detected; hand cycle reset.")
         self._was_in_match = in_match
         if not in_match or time.monotonic() - self._last_action_at < self.config.action_cooldown_seconds:
             return
+
+        if self.driver is not None and self._step_policy(image):
+            return
+
         ready_slots = [
             slot for slot, region in enumerate(self.config.card_ready_regions)
             if mean_luma(image, scaled_rect(self.config, region, image.size)) >= self.config.card_ready_min_luma
@@ -143,6 +208,48 @@ class LiveMatchRunner:
         else:
             self._last_logged_choice = choice
         self._last_action_at = time.monotonic()
+
+    def _step_policy(self, image) -> bool:
+        """One policy-driven decision. Returns False to fall through to the
+        heuristic.
+
+        Degrading rather than failing is the whole reason the heuristic is
+        kept: if vision drops out mid-match — window occluded, an arena skin
+        the thresholds do not handle — tapping a safe card at a safe spot is
+        a far better failure mode than feeding the policy a fabricated board
+        and letting it act on it.
+        """
+        observation = self.perceive(image)
+        if observation is None:
+            if not self._degraded:
+                self._degraded = True
+                self.log("Perception unavailable; falling back to the heuristic.")
+            return False
+        if self._degraded:
+            self._degraded = False
+            self.log("Perception recovered; policy driving again.")
+
+        action = self.driver.decide(observation)
+        if action is None:
+            return True   # the policy chose to hold; that is a real decision
+
+        target = self.tile_to_pixel(action.tile, image.size)
+        if target is None:
+            return False
+        card_slot = scaled_point(self.config, self.config.card_slots[action.slot], image.size)
+        self.log(f"{'Playing' if self.armed else 'Would play'} {action.card} "
+                 f"from slot {action.slot + 1} at tile "
+                 f"({action.tile[0]:.1f}, {action.tile[1]:.1f}) -> {target}.")
+        if self.armed:
+            self.device.tap(*card_slot)
+            time.sleep(self.config.tap_delay_seconds)
+            self.device.tap(*target)
+            # Advance the deterministic cycle only when the tap actually went
+            # out; advancing on a dry run would desynchronise the hand from
+            # the game for the rest of the match.
+            self.hand.play(action.slot)
+        self._last_action_at = time.monotonic()
+        return True
 
     def _choose_action(self, ready_slots: list[int]) -> tuple[int, str] | None:
         if self.config.decision_mode == "dynamic_slots":

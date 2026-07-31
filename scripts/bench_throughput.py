@@ -34,12 +34,17 @@ from src.training.curriculum import load_curriculum
 _TMP_POOL = Path("runs/_bench_pool")
 
 
-def build_env_fn(stage_name: str = "full_pool", tier: str = "restricted"):
-    """Return (env_fn, live_bot) matching how train.py builds envs."""
+def build_env_fn(config_path: str, stage_name: str = "full_pool"):
+    """Return (env_fn, live_bot, net) matching how train.py builds envs.
+
+    Takes the config path so feedforward / asymmetric-critic / recurrent
+    variants can be compared without the stage or network silently differing
+    — the confound that made earlier throughput claims unusable.
+    """
     cards = load_cards()
     arena = load_arena()
     catalog = DeckCatalog()
-    cfg = load_training_config(Path("configs/training_restricted.yaml"))
+    cfg = load_training_config(Path(config_path))
     stage = next(s for s in load_curriculum() if s.name == stage_name)
     names = list(cards.keys())
     net = make_network(len(names), cfg.raw.get("network"))
@@ -47,12 +52,16 @@ def build_env_fn(stage_name: str = "full_pool", tier: str = "restricted"):
     pool = CheckpointPool(_TMP_POOL)
     live_bot = PolicyBot(net, names, name="latest", deterministic=False)
     setup_fn = make_setup_fn(stage, catalog, cfg, pool, live_bot)
+    tier = net.config.tier
 
     def env_fn():
         deck = catalog.resolve("training_mirror")
         return CRBattleEnv(cards, arena, deck, list(deck), reward_fn=reward_fn,
-                           lanes="both", regulation=None, setup_fn=setup_fn,
-                           use_spatial=False)
+                           lanes=stage.single_lane or "both",
+                           regulation=stage.match_time, setup_fn=setup_fn,
+                           tier=tier,
+                           with_units=getattr(net.config, "use_set_encoder", False),
+                           critic_tier=getattr(net.config, "critic_tier", None))
 
     return env_fn, live_bot, net
 
@@ -63,14 +72,17 @@ def main() -> None:
     ap.add_argument("--n-envs", type=int, default=8)
     ap.add_argument("--workers", type=int, default=0,
                     help="0 = SyncVecEnv (single process); >0 = SubprocVecEnv")
-    ap.add_argument("--torch-threads", type=int, default=0,
-                    help="0 = leave torch defaults alone")
+    ap.add_argument("--torch-threads", type=int, default=1,
+                    help="Intra-op torch threads; 1 measured fastest here")
+    ap.add_argument("--config", default="configs/training_restricted.yaml")
+    ap.add_argument("--stage", default="full_pool")
+    ap.add_argument("--label", default=None)
     args = ap.parse_args()
 
     if args.torch_threads:
         torch.set_num_threads(args.torch_threads)
 
-    env_fn, live_bot, net = build_env_fn()
+    env_fn, live_bot, net = build_env_fn(args.config, args.stage)
     env_fns = [env_fn for _ in range(args.n_envs)]
 
     if args.workers:
@@ -100,8 +112,10 @@ def main() -> None:
 
     total = args.steps * args.n_envs
     sps = total / dt
-    print(f"{label:28s} {args.n_envs} envs  {total} steps in {dt:6.1f}s "
-          f"-> {sps:6.1f} sps   1M steps = {1e6 / sps / 3600:.1f} h")
+    name = args.label or Path(args.config).stem
+    params = sum(p.numel() for p in net.parameters())
+    print(f"{name:26s} {args.stage:12s} {label:24s} {args.n_envs:3d} envs "
+          f"{params/1e6:5.2f}M params -> {sps:7.1f} sps   1M = {1e6 / sps / 3600:5.1f} h")
 
 
 if __name__ == "__main__":

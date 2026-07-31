@@ -45,3 +45,22 @@ stages:
     selfplay: false
     focused_rotation: true
     promote: null
+
+  # Deployment stage: train the deck you will actually play live.
+  #
+  # `deck` pins the agent's side; `opponent_deck_pool` keeps the opposition
+  # sampling the whole ladder meta. That asymmetry is the point — you equip
+  # one deck in the real game, so specializing on it is a far easier problem
+  # than generalizing over seventy, but fixing *both* sides would overfit to
+  # a single matchup and teach nothing about the field.
+  #
+  # Edit `my_deck` in configs/decks.yaml to match your in-game loadout, and
+  # set configs/card_levels.yaml to your real card levels, before running it.
+  - name: my_deck
+    deck: my_deck
+    opponent_deck_pool: ladder_top50
+    single_lane: null
+    match_time: null
+    opponents: [rusher, control, siege, beatdown]
+    selfplay: true
+    promote: null

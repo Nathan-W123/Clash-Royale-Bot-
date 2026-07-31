@@ -243,23 +243,67 @@ def test_policy_bot_carries_memory_across_decisions(world, net):
     assert not torch.equal(first, bot._hidden[key]), "memory did not advance"
 
 
-def test_recurrent_bot_opts_out_of_batched_opponent_path(world, net):
-    """`policy_actions_batched` has no hidden state to thread, so a recurrent
-    bot must decline batching rather than be played memoryless."""
+def test_batched_recurrent_opponents_match_sequential_ones(world, net):
+    """Batching recurrent opponents must thread each engine's own memory.
+
+    The naive batched path has no hidden state, so it would play a recurrent
+    policy as if it had none. `batched_rows` gathers per-engine memory,
+    stacks it into one forward, and scatters it back — this pins that the
+    result is identical to deciding one engine at a time.
+    """
+    cards, arena, deck = world
+    names = list(cards.keys())
+    engines = []
+    for i in range(4):
+        e = _env(world)
+        e.reset(seed=20 + i)
+        for _ in range(10 * (i + 1)):  # diverge both state and memory
+            e.engine.tick()
+        engines.append(e.engine)
+
+    batched_bot = PolicyBot(net, names, deterministic=True)
+    solo_bot = PolicyBot(net, names, deterministic=True)
+
+    # Two decisions each, so the second one depends on memory from the first.
+    for _ in range(2):
+        rows = batched_bot.batched_rows(engines, Side.TOP)
+        batched = [batched_bot.decode_row(e, Side.TOP, r) for e, r in zip(engines, rows)]
+        solo = [solo_bot.decide(e, Side.TOP) for e in engines]
+        for b, s in zip(batched, solo):
+            assert (b is None) == (s is None)
+            if b is not None:
+                assert (b.slot, b.x, b.y) == (s.slot, s.x, s.y)
+
+
+def test_batched_recurrent_memory_stays_per_engine(world, net):
+    """Distinct engines must not share a hidden state through the batch."""
     cards, _, _ = world
-    rec = PolicyBot(net, list(cards.keys()))
-    plain = PolicyBot(make_network(len(cards), {"tier": obs_layout.TIER_RESTRICTED}),
-                      list(cards.keys()))
-    assert rec.batch_key() is None
-    assert plain.batch_key() is not None
+    bot = PolicyBot(net, list(cards.keys()), deterministic=True)
+    engines = []
+    for i in range(3):
+        e = _env(world)
+        e.reset(seed=40 + i)
+        for _ in range(5 * (i + 1)):
+            e.engine.tick()
+        engines.append(e.engine)
+
+    bot.batched_rows(engines, Side.TOP)
+    stored = [bot._hidden[(id(e), int(Side.TOP))] for e in engines]
+    assert len(stored) == 3
+    for h in stored:
+        assert h.shape == (1, 1, net.config.hidden_size)
+    assert not torch.equal(stored[0], stored[1])
+    assert not torch.equal(stored[1], stored[2])
 
 
-def test_vec_env_defers_recurrent_opponents(world, net):
+def test_vec_env_batches_recurrent_opponents(world, net):
+    """They are resolved by the batched path (not deferred), and the step
+    still completes."""
     cards, _, _ = world
     from src.simulator.env import UNSET
     bot = PolicyBot(net, list(cards.keys()), deterministic=True)
     envs = SyncVecEnv([lambda: _env(world, opponent=bot) for _ in range(3)])
     envs.reset(seed=5)
-    assert all(r is UNSET for r in envs._batched_opponent_actions())
+    assert all(r is not UNSET for r in envs._batched_opponent_actions())
     obs, r, d, m, infos = envs.step(np.zeros((3, 2), dtype=np.int64))
-    assert len(infos) == 3  # and the step still completes correctly
+    assert len(infos) == 3

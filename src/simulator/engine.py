@@ -40,6 +40,7 @@ class BattleEngine:
         seed: int | np.random.Generator = 0,
         lanes: str = "both",              # "both" | "right" (curriculum stage 0)
         regulation: float | None = None,  # override match length (stage 0)
+        cards: dict[str, CardStats] | None = None,
     ):
         self.arena = arena
         self.rng = seed if isinstance(seed, np.random.Generator) else np.random.default_rng(seed)
@@ -58,7 +59,11 @@ class BattleEngine:
         self.towers: list[Tower] = []
         self._next_id = 1
         self._by_id: dict[int, Unit | Tower] = {}
-        self.cards = load_cards()
+        # The table used for *derived* spawns and lookups: death-spawns,
+        # hero summons, spell stun durations. It must be the same table the
+        # decks came from, or a level-scaled run would spawn level-1 Lava
+        # Pups behind a level-13 Lava Hound.
+        self.cards = cards if cards is not None else load_cards()
         self._build_towers()
 
     # ------------------------------------------------------------- setup

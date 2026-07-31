@@ -56,8 +56,6 @@ class SyncVecEnv:
         no tensor work to amortize. Their envs get UNSET so `CRBattleEnv.step`
         resolves them itself, exactly as before.
         """
-        from src.agent.selfplay import policy_actions_batched
-
         resolved: list = [UNSET] * self.n
         groups: dict = {}
         for i, env in enumerate(self.envs):
@@ -67,15 +65,15 @@ class SyncVecEnv:
                 continue  # scripted bot, or no opponent: leave to the env
             key = key_fn()
             if key is None:
-                continue  # opts out of batching (e.g. recurrent: needs memory)
+                continue  # opted out of batching
             groups.setdefault(key, []).append(i)
 
         for _, idxs in groups.items():
             bot = self.envs[idxs[0]].opponent
             engines = [self.envs[i].engine for i in idxs]
-            rows = policy_actions_batched(
-                bot.net, engines, Side.TOP, bot.card_to_id,
-                deterministic=bot.deterministic)
+            # `batched_rows` also threads per-engine hidden state, so
+            # recurrent opponents keep both their memory and the batching win.
+            rows = bot.batched_rows(engines, Side.TOP)
             for i, row in zip(idxs, rows):
                 action = bot.decode_row(self.envs[i].engine, Side.TOP, row)
                 resolved[i] = (None if action is None

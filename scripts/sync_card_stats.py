@@ -163,6 +163,34 @@ def _damage(row: dict, projectiles: dict) -> float:
     return float(dmg)
 
 
+def _ladders(row: dict, projectiles: dict) -> dict:
+    """Per-level HP and damage ladders, verbatim from upstream.
+
+    Vendored rather than derived from a shared ~10%/level curve because the
+    curve is not actually shared once rounding is applied: across the roster
+    there are 59 distinct HP ladders. Low-HP cards are the worst offenders —
+    Skeletons at 32 HP round into visible steps rather than a smooth 10%.
+    Since the whole point of choosing a card level is to make the simulated
+    breakpoints match the ones a player actually has, an approximation here
+    would defeat the feature.
+
+    Damage follows the same projectile link as the flat values, so a ranged
+    unit's ladder comes off the projectile it fires.
+    """
+    out: dict[str, list[int]] = {}
+    hp = row.get("hitpoints_per_level")
+    if hp:
+        out["hp_per_level"] = [int(v) for v in hp]
+    damage = row.get("damage_per_level")
+    if not damage and row.get("projectile"):
+        p = projectiles.get(row["projectile"])
+        if p:
+            damage = p.get("damage_per_level")
+    if damage:
+        out["damage_per_level"] = [int(v) for v in damage]
+    return out
+
+
 def _splash(row: dict, projectiles: dict) -> float:
     """Area-damage radius, following the character -> projectile link.
 
@@ -206,6 +234,7 @@ def distil(raw: dict) -> dict:
             "speed": (c.get("speed") or 0) / 60.0,
             "count": troop.get("summon_number") or 1,
             "splash_radius": _splash(c, projectiles),
+            **_ladders(c, projectiles),
         }
     for key, b in buildings.items():
         out[key] = {
@@ -218,6 +247,7 @@ def distil(raw: dict) -> dict:
             "speed": 0.0,
             "count": 1,
             "splash_radius": _splash(b, projectiles),
+            **_ladders(b, projectiles),
         }
     for key, s in spells.items():
         row = _spell_row(s, projectiles)
@@ -237,6 +267,7 @@ def distil(raw: dict) -> dict:
                 "damage": _damage(row, projectiles),
                 "hit_speed": (row.get("hit_speed") or 0) / 1000,
                 "range": (row.get("range") or 0) / 1000,
+                **_ladders(row, projectiles),
             }
     return {"_source": UPSTREAM,
             "_note": "Level-1 base values. Troop scaling is uniform per level, "
@@ -267,12 +298,16 @@ def _spell_row(row: dict, projectiles: dict) -> dict:
     # spell multiplier", which this table does not contain. Reporting it as
     # 1.0 would hand Barbarian Barrel and Royal Delivery full tower damage.
     crown = pick("crown_tower_damage_percent")
-    return {
+    ladder = row.get("damage_per_level") or projectile.get("damage_per_level")
+    out = {
         "kind": "spell",
         "spell_damage": _damage(row, projectiles),
         "spell_radius": float(radius),
         "tower_multiplier": round(1.0 + crown / 100.0, 3) if crown else None,
     }
+    if ladder:
+        out["spell_damage_per_level"] = [int(v) for v in ladder]
+    return out
 
 
 def refresh() -> dict:

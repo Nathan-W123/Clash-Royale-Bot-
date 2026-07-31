@@ -8,6 +8,8 @@ from src.live.config import LiveConfig, load_live_config
 from src.live.device import ADBDevice, LiveDevice, WindowsDesktopDevice
 from src.live.runner import LiveMatchRunner, scaled_rect
 from src.live.vision import mean_luma, mean_saturation
+from src.viz import attach as viz
+from src.viz import telemetry
 
 
 def diagnose(config: LiveConfig, device: LiveDevice, out_path: Path) -> None:
@@ -46,6 +48,16 @@ def main() -> None:
         help="Capture one screenshot, print match/ready detection values for it, save it, and exit.",
     )
     parser.add_argument("--diagnose-out", type=Path, default=Path("live_diagnostic.png"))
+    parser.add_argument("--viz-port", type=int, default=None,
+                        help="serve the 3D viewer on this port and mirror the "
+                             "runner's output into its terminal pane "
+                             "(http://localhost:PORT)")
+    parser.add_argument("--viz-host", default="127.0.0.1",
+                        help="bind address for --viz-port; loopback by default")
+    parser.add_argument("--checkpoint", type=Path, default=None,
+                        help="trained `human`-tier policy to drive live play "
+                             "(overrides `checkpoint:` in the config). Without "
+                             "one the runner uses the configured heuristic.")
     args = parser.parse_args()
     config = load_live_config(args.config)
     device: LiveDevice
@@ -56,8 +68,47 @@ def main() -> None:
     if args.diagnose:
         diagnose(config, device, args.diagnose_out)
         return
-    runner = LiveMatchRunner(config, device, armed=args.armed)
+    log = print
+    if args.viz_port:
+        viz.start_server(args.viz_port, args.viz_host,
+                         mode_note=f"streaming from live bridge "
+                                   f"({'armed' if args.armed else 'observing'})")
+        log = telemetry.TeeLogger()
+
+    driver = _build_driver(config, args.checkpoint, log)
+    if driver is not None:
+        # No-op unless --viz-port opened a viewer. With one, the 3D graph
+        # animates from the same forward passes that choose the real taps.
+        viz.attach_live_driver(driver, label="live policy")
+
+    runner = LiveMatchRunner(config, device, armed=args.armed, log=log, driver=driver)
     runner.run_forever()
+
+
+def _build_driver(config, checkpoint_override, log):
+    """Load the policy that will drive live play, or None for the heuristic."""
+    checkpoint = checkpoint_override or config.checkpoint
+    if not checkpoint:
+        return None
+
+    from src.agent.selfplay import checkpoint_card_levels, load_checkpoint
+    from src.live.bridge import PolicyDriver
+    from src.simulator.cards import load_arena, load_cards
+    from src.simulator.levels import describe, scale_arena, scale_cards
+
+    net, card_names = load_checkpoint(Path(checkpoint))
+    # Card levels come from the checkpoint, not the live config: the policy
+    # learned breakpoints at the levels it trained on, and running it against
+    # a differently-levelled collection would silently be a different game.
+    levels = checkpoint_card_levels(Path(checkpoint))
+    log(f"Loaded {checkpoint} ({net.config.tier} tier); {describe(levels)}")
+    cards = scale_cards(load_cards(), levels)
+    arena = scale_arena(load_arena(), levels)
+
+    deck = list(config.deck) or list(config.preset_deck)
+    driver = PolicyDriver(net, card_names, cards, arena, deck)
+    log(f"Policy driving live play with deck: {', '.join(deck)}")
+    return driver
 
 
 if __name__ == "__main__":

@@ -1,0 +1,45 @@
+# Card levels the simulator trains at.
+#
+# WHY THIS MATTERS
+#
+# configs/cards.yaml holds level-1 values. If every card moved by the same
+# factor, the level would be irrelevant — breakpoints are ratios, and
+# multiplying both sides changes nothing. Two things break that:
+#
+#   1. MIXED LEVELS. A level-13 Hog Rider next to a level-11 Musketeer does
+#      not behave like an all-level-11 deck. Every "does this spell kill that
+#      troop" threshold in the deck shifts. A policy trained at uniform
+#      level 1 has learned thresholds you do not actually own.
+#   2. PER-CARD ROUNDING. The ladders are ~10%/level but each is rounded
+#      independently — 59 distinct HP ladders across the roster. Skeletons at
+#      32 HP step in visible jumps. So even a uniform shift is not exactly a
+#      no-op.
+#
+# SET THESE TO YOUR REAL COLLECTION. The point is for the simulated
+# breakpoints to match the ones you have equipped in-game. Guessing high
+# teaches the policy trades it cannot actually make.
+#
+# Levels are baked into the checkpoint, so the live bridge can verify that
+# the policy it is running was trained against the cards you own.
+#
+# Scaling uses the real per-level ladders vendored in
+# configs/reference_card_stats.json — not a 10%/level approximation.
+# Only hp, damage, spell damage and death damage scale; hit speed, range,
+# sight range, speed and spawn count are level-invariant, as in the real game.
+
+card_levels:
+  # Level used for any card without an explicit override below. 1-15.
+  default: 11
+
+  # Your King Tower level, which sets both tower HP and tower damage.
+  # Keep this honest too: the tower-to-troop HP ratio is what decides how
+  # many hits a win condition needs to connect.
+  tower: 11
+
+  # Per-card overrides for anything off your default. Evolutions inherit
+  # their base card's level automatically (hog_rider covers hog_rider_evo),
+  # which is how upgrading works in the real game.
+  overrides: {}
+  #   hog_rider: 13
+  #   fireball: 12
+  #   skeletons: 14

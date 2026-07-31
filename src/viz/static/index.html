@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CR Bot — policy network</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <section id="stage">
+    <canvas id="gl"></canvas>
+
+    <header id="hud-top">
+      <div class="brand">
+        <span class="dot" id="conn-dot"></span>
+        <strong>CR Bot</strong><span class="sep">/</span><span id="arch-label">policy network</span>
+      </div>
+      <div class="modes">
+        <button data-mode="training" class="mode">Training</button>
+        <button data-mode="live" class="mode">Live</button>
+        <button data-mode="idle" class="mode">Pause</button>
+      </div>
+    </header>
+
+    <aside id="hud-stats" class="panel">
+      <div class="panel-title">telemetry</div>
+      <dl id="stats-list"></dl>
+    </aside>
+
+    <aside id="hud-legend" class="panel">
+      <div class="panel-title">layers</div>
+      <ul id="legend-list"></ul>
+      <div class="panel-note" id="sampling-note"></div>
+    </aside>
+
+    <div id="tooltip"></div>
+  </section>
+
+  <section id="console">
+    <div id="console-bar">
+      <span class="panel-title">bot output</span>
+      <span class="spacer"></span>
+      <label class="chk"><input type="checkbox" id="autoscroll" checked> follow</label>
+      <button id="clear-log">clear</button>
+    </div>
+    <pre id="log"></pre>
+  </section>
+</div>
+
+<script src="gl.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

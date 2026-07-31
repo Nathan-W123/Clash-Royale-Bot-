@@ -1,0 +1,207 @@
+/* Dark-only on purpose: this sits next to a terminal during long runs, and a
+   light theme would wash out the additive edge glow the whole view relies on. */
+:root {
+  --bg: #06080f;
+  --panel: rgba(12, 17, 30, 0.82);
+  --line: rgba(120, 155, 220, 0.18);
+  --text: #c9d6f0;
+  --dim: #6b7ba3;
+  --accent: #4fd6ff;
+  --good: #5cf2a7;
+  --warn: #ffcc66;
+  --bad: #ff6b81;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.5 var(--mono);
+  overflow: hidden;
+}
+
+#app { display: flex; flex-direction: column; height: 100%; }
+
+#stage { position: relative; flex: 1 1 auto; min-height: 0; }
+#gl { display: block; width: 100%; height: 100%; cursor: grab; }
+#gl.dragging { cursor: grabbing; }
+
+/* ---------------------------------------------------------------- panels */
+
+.panel {
+  position: absolute;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  backdrop-filter: blur(14px);
+  padding: 10px 12px;
+  pointer-events: auto;
+}
+
+.panel-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.panel-note {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 10.5px;
+  line-height: 1.45;
+  max-width: 230px;
+}
+
+#hud-top {
+  position: absolute;
+  inset: 12px 12px auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  backdrop-filter: blur(14px);
+}
+.brand .sep { color: var(--dim); }
+#arch-label { color: var(--dim); }
+
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--bad);
+  box-shadow: 0 0 10px currentColor;
+  color: var(--bad);
+  transition: background .3s, color .3s;
+}
+.dot.on { background: var(--good); color: var(--good); }
+
+.modes { display: flex; gap: 6px; pointer-events: auto; }
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 14px;
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  transition: border-color .18s, color .18s, background .18s;
+}
+button:hover { border-color: rgba(120, 200, 255, 0.5); color: #fff; }
+button.active {
+  border-color: var(--accent);
+  color: #061018;
+  background: var(--accent);
+  font-weight: 600;
+}
+
+/* Inset from the right edge rather than pinned to it, so the panel sits
+   near the graph instead of stranded across a gap of empty space. */
+#hud-stats {
+  top: 62px;
+  right: clamp(12px, 13%, 230px);
+  min-width: 200px;
+}
+#hud-stats .panel-title { color: var(--accent); opacity: .8; }
+#stats-list { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; }
+/* Teal labels, near-white values: the old --dim grey was unreadable against
+   the dark scene, which is the one thing a telemetry panel cannot be. */
+#stats-list dt { color: var(--accent); }
+#stats-list dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #e9f3ff;
+  font-weight: 600;
+}
+
+#hud-legend { bottom: 12px; left: 12px; max-height: 46%; overflow: auto; }
+#legend-list { list-style: none; margin: 0; padding: 0; }
+#legend-list li {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 0; color: var(--dim); font-size: 11.5px;
+  cursor: default;
+}
+#legend-list li b { color: var(--text); font-weight: 500; }
+#legend-list .swatch {
+  width: 9px; height: 9px; border-radius: 2px; flex: none;
+  box-shadow: 0 0 8px currentColor;
+}
+#legend-list .count { margin-left: auto; opacity: .65; font-size: 10.5px; }
+
+#tooltip {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(12px, -50%);
+  background: rgba(6, 10, 20, 0.94);
+  border: 1px solid rgba(120, 200, 255, 0.35);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-size: 11.5px;
+  white-space: nowrap;
+  transition: opacity .12s;
+  z-index: 5;
+}
+#tooltip.on { opacity: 1; }
+#tooltip .k { color: var(--dim); }
+
+/* --------------------------------------------------------------- console */
+
+#console {
+  flex: 0 0 30%;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+  background: #04060c;
+}
+
+#console-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+}
+#console-bar .panel-title { margin: 0; }
+#console-bar .spacer { flex: 1; }
+#console-bar button { padding: 3px 10px; font-size: 11px; }
+.chk { color: var(--dim); font-size: 11px; display: flex; gap: 5px; align-items: center; }
+
+#log {
+  margin: 0;
+  padding: 8px 12px 14px;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+#log .line { color: #93a4c8; }
+#log .good { color: var(--good); }
+#log .warn { color: var(--warn); }
+#log .error { color: var(--bad); }
+#log .t { color: #47557a; margin-right: 8px; }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(120, 155, 220, 0.22); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(120, 155, 220, 0.4); }

@@ -200,7 +200,7 @@ class CRBattleEnv(gym.Env):
             deck_b, deck_t, self.opponent = self.setup_fn(self._rng)
         self.engine = BattleEngine(
             deck_b, deck_t, self.arena, seed=self._rng,
-            lanes=self.lanes, regulation=self.regulation)
+            lanes=self.lanes, regulation=self.regulation, cards=self.cards)
         self._usage = {}
         self._illegal = 0
         return self.build_obs(Side.BOTTOM), {"masks": self.build_masks(Side.BOTTOM)}

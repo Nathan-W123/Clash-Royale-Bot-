@@ -99,9 +99,14 @@ def run_match_detailed(
     bottom_deck_name: str = "",
     top_deck_name: str = "",
     decision_ticks: int = 5,
+    cards: dict[str, CardStats] | None = None,
 ) -> MatchReport:
+    # `cards` is the table derived spawns come from (death-spawns, hero
+    # summons). Pass the same one the decks came from, or a level-scaled run
+    # spawns level-1 products behind level-N parents.
     engine = BattleEngine(
-        bottom_deck, top_deck, arena, seed=seed, lanes=lanes, regulation=regulation
+        bottom_deck, top_deck, arena, seed=seed, lanes=lanes,
+        regulation=regulation, cards=cards
     )
     bottom_plays: dict[str, int] = {}
     top_plays: dict[str, int] = {}

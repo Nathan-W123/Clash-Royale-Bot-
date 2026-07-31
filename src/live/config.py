@@ -56,6 +56,12 @@ class LiveConfig:
     # src/live/homography.py. Optional: without it the bridge falls back to
     # fixed configured tap targets and cannot do arena perception.
     homography_anchors: tuple[tuple[str, tuple[int, int]], ...] = ()
+    # The elixir bar, for reading own elixir. Required by decision_mode
+    # 'policy': without it there is no affordability mask and the policy
+    # would be asked to choose from cards it cannot pay for.
+    elixir_bar: Rect | None = None
+    checkpoint: str | None = None
+    deck: tuple[str, ...] = ()
 
     def homography(self):
         """Solve the calibrated pixel<->tile mapping, or None if uncalibrated."""
@@ -74,13 +80,17 @@ class LiveConfig:
             raise ValueError("desktop_capture must be either 'virtual_desktop' or 'window'")
         if len(self.reference_size) != 2 or any(value <= 0 for value in self.reference_size):
             raise ValueError("reference_size must contain positive [width, height]")
-        if self.decision_mode not in {"dynamic_slots", "known_deck"}:
-            raise ValueError("decision_mode must be either 'dynamic_slots' or 'known_deck'")
+        if self.decision_mode not in {"dynamic_slots", "known_deck", "policy"}:
+            raise ValueError(
+                "decision_mode must be 'policy', 'dynamic_slots' or 'known_deck'")
         if not self.slot_priority or any(slot not in range(4) for slot in self.slot_priority):
             raise ValueError("slot_priority must contain card-slot indexes from 0 through 3")
         if len(self.card_slots) != 4 or len(self.card_ready_regions) != 4:
             raise ValueError("live play requires exactly four card slots and ready regions")
         self._validate_geometry()
+        if self.decision_mode == "policy":
+            self._validate_policy_mode()
+            return
         if self.decision_mode == "dynamic_slots":
             return
         if len(self.preset_deck) != 8:
@@ -112,6 +122,38 @@ class LiveConfig:
                 "anything. Calibrate placements (see configs/live_play.example.yaml) "
                 "or use decision_mode 'dynamic_slots'."
             )
+
+    def _validate_policy_mode(self) -> None:
+        """A policy needs more calibration than the heuristics do.
+
+        Each of these is checked at load time rather than mid-match because
+        the failure modes are all silent: no homography means every placement
+        lands at the same wrong pixel, no elixir bar means the affordability
+        mask is fabricated, and a deck that does not match the one equipped
+        in-game means the hand cycle drifts a card at a time.
+        """
+        if not self.homography_anchors:
+            raise ValueError(
+                "decision_mode 'policy' needs `homography_anchors`: the policy "
+                "chooses an arena tile, and without a calibrated homography "
+                "there is no way to turn that into a tap. See "
+                "configs/live_play.example.yaml.")
+        if self.elixir_bar is None:
+            raise ValueError(
+                "decision_mode 'policy' needs `elixir_bar`: without reading own "
+                "elixir the affordability mask is fabricated and the policy will "
+                "pick cards it cannot pay for.")
+        if len(self.deck) != 8:
+            raise ValueError(
+                f"decision_mode 'policy' needs `deck` to list exactly the eight "
+                f"cards equipped in-game, got {len(self.deck)}. The hand cycle is "
+                f"simulated from it, so a mismatch drifts one card at a time.")
+        if len(set(self.deck)) != len(self.deck):
+            raise ValueError("`deck` may not contain duplicate cards")
+        if not self.checkpoint:
+            raise ValueError(
+                "decision_mode 'policy' needs `checkpoint` (or --checkpoint) "
+                "pointing at a trained `human`-tier policy.")
 
     def _validate_geometry(self) -> None:
         """Every calibrated coordinate must fall inside `reference_size`.
@@ -151,6 +193,12 @@ class LiveConfig:
                     f"card_ready_regions[{slot}] {rect} extends past reference_size "
                     f"{tuple(self.reference_size)}"
                 )
+        if self.elixir_bar is not None:
+            e = self.elixir_bar
+            if e.x + e.width > width or e.y + e.height > height:
+                raise ValueError(
+                    f"elixir_bar {e} extends past reference_size "
+                    f"{tuple(self.reference_size)}")
         r = self.match_indicator
         if r.x + r.width > width or r.y + r.height > height:
             raise ValueError(
@@ -241,6 +289,10 @@ def load_live_config(path: Path | str) -> LiveConfig:
         desktop_capture=str(config.get("desktop_capture", "virtual_desktop")).lower(),
         window_title=str(config["window_title"]) if config.get("window_title") else None,
         tap_delay_seconds=float(config.get("tap_delay_seconds", 0.15)),
+        elixir_bar=(Rect.from_values(config["elixir_bar"], "elixir_bar")
+                    if config.get("elixir_bar") else None),
+        checkpoint=str(config["checkpoint"]) if config.get("checkpoint") else None,
+        deck=tuple(config.get("deck", ())),
         homography_anchors=tuple(
             (str(name), (int(point[0]), int(point[1])))
             for name, point in (config.get("homography_anchors") or {}).items()),

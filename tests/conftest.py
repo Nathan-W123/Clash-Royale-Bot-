@@ -32,6 +32,15 @@ def make_engine(cards, arena, deck=None, **kwargs):
     return BattleEngine(deck, list(deck), arena, **kwargs)
 
 
+def scaled_tables(level=11, tower=None):
+    """(cards, arena) at a chosen level — for tests about level scaling."""
+    from src.simulator.cards import load_arena, load_cards
+    from src.simulator.levels import CardLevels, scale_arena, scale_cards
+
+    levels = CardLevels(default=level, tower=tower if tower is not None else level)
+    return scale_cards(load_cards(), levels), scale_arena(load_arena(), levels)
+
+
 def spawn_unit(engine, stats, side, x, y, hp=None):
     """Inject a unit directly, bypassing hand/elixir — for engine-level tests.
 

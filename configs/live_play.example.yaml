@@ -83,6 +83,41 @@ live:
   #   bridge_left:          [140, 505]
   #   bridge_right:         [416, 505]
 
+  # ---- policy mode: a trained checkpoint drives play ----
+  # This is the endgame the project is for. Set decision_mode: policy and the
+  # runner builds an observation from perception, runs the policy, and taps
+  # the tile it chose. It needs strictly more calibration than the
+  # heuristics, and every missing piece fails loudly at load time because
+  # each one fails *silently* at runtime:
+  #
+  #   homography_anchors  above — without it every placement lands at the
+  #                       same wrong pixel
+  #   elixir_bar          below — without it the affordability mask is
+  #                       fabricated and the policy picks cards it cannot pay for
+  #   deck                below — the hand cycle is simulated from it, so a
+  #                       mismatch with your in-game loadout drifts one card at a time
+  #   checkpoint          below, or --checkpoint
+  #
+  # The checkpoint must be `human` tier. A `full`-tier one is refused: it
+  # reads the opponent's exact elixir, which no player can see.
+  #
+  # If perception drops out mid-match the runner logs it and degrades to the
+  # dynamic_slots heuristic rather than acting on a fabricated board, so keep
+  # dynamic_target calibrated even in policy mode.
+
+  # The elixir bar: the magenta gauge along the bottom of the HUD. Measure
+  # the filled region at full elixir — the runner reads what fraction of its
+  # columns are magenta.
+  elixir_bar: [100, 960, 350, 20]
+
+  # The eight cards you have equipped, in cycle order: first four start in
+  # hand, the rest queue behind them. Must match your in-game deck exactly.
+  deck: [knight, archers, goblins, giant, musketeer, minions, fireball, cannon]
+
+  # Trained policy. Card levels are read from the checkpoint, not from here,
+  # so the bridge plays the same game the policy trained on.
+  checkpoint: runs/my_deck/final.pt
+
   # ---- known_deck mode only; ignored under dynamic_slots ----
   # Must exactly match the deck selected in-game (order here is arbitrary).
   preset_deck: [giant, musketeer, mini_pekka, minions, knight, goblins, fireball, cannon]

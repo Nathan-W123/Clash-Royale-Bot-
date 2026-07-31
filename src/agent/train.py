@@ -39,6 +39,7 @@ from src.decks.builder import AdaptiveDeckBuilder, AdaptiveDeckBuilderConfig
 from src.decks.catalog import DeckCatalog
 from src.training.focused_curriculum import FocusedRotationManager
 from src.simulator.cards import load_arena, load_cards
+from src.simulator.levels import describe, load_card_levels, scale_arena, scale_cards
 from src.simulator.constants import MatchResult, Side
 from src.simulator.env import CRBattleEnv
 from src.simulator.vec_env import SyncVecEnv
@@ -46,8 +47,20 @@ from src.training.config import load_training_config
 from src.training.curriculum import CurriculumStage, load_curriculum
 from src.training.match_runner import run_match_detailed
 from src.training.matchup_tracker import MatchupTracker
+from src.viz import attach as viz
+from src.viz import telemetry
 
 DEVICE = torch.device("cpu")
+
+
+def _report(line: str) -> None:
+    """Print, and mirror to the 3D viewer's terminal when one is attached.
+
+    `telemetry.log` is a no-op with no viewer, so this stays a plain print
+    in the normal case.
+    """
+    print(line)
+    telemetry.log(line)
 
 
 class ShapedRewardFn:
@@ -325,6 +338,7 @@ def train_stage(
     tier=obs_layout.TIER_FULL,
     obs_noise_cfg: dict | None = None,
     matchup_tracker: MatchupTracker | None = None,
+    card_levels=None,
 ) -> int:
     shaper = RewardShaper()
     reward_fn = ShapedRewardFn(shaper)
@@ -415,6 +429,10 @@ def train_stage(
     hidden = net.initial_hidden(n_envs, DEVICE) if recurrent else None
     prev_dones = None
 
+    # None unless a viewer is attached (`--viz-port`), in which case every
+    # viz call below is a no-op.
+    viz_probe = viz.attach_to_network(net, label=f"{stage.name} stage")
+
     while global_step - stage_start < step_budget:
         if recurrent:
             buffer = RecurrentRolloutBuffer(ppo_cfg.n_steps, n_envs, obs_shapes,
@@ -424,7 +442,7 @@ def train_stage(
             buffer = RolloutBuffer(ppo_cfg.n_steps, n_envs, obs_shapes, mask_shapes)
         t0 = time.perf_counter()
         reward_sum = 0.0
-        for _ in range(ppo_cfg.n_steps):
+        for rollout_step in range(ppo_cfg.n_steps):
             obs_t = obs_to_tensors(obs, DEVICE)
             masks_t = masks_to_tensors(masks, DEVICE)
             if recurrent:
@@ -453,6 +471,8 @@ def train_stage(
                     if focused is not None:
                         focused.record(m)
             obs, masks = next_obs, next_masks
+            if rollout_step % viz.ACT_EVERY_STEPS == 0:
+                viz.emit_act(viz_probe, global_step + rollout_step * n_envs)
 
         with torch.no_grad():
             if recurrent:
@@ -518,15 +538,23 @@ def train_stage(
             tb_writer.add_scalar("train/value_loss", stats["value_loss"], global_step)
             tb_writer.add_scalar("train/reward_anneal", reward_fn.weight, global_step)
             tb_writer.add_scalar("train/steps_per_sec", sps, global_step)
-        print(f"[{stage.name}] step {global_step:>8}  win {wins:.2f}  draw {draws:.2f}  "
-              f"ent {stats['entropy']:.2f}  anneal {reward_fn.weight:.2f}  {sps:.0f} sps  "
-              f"eps {len(ep_metrics)}")
+        _report(f"[{stage.name}] step {global_step:>8}  win {wins:.2f}  draw {draws:.2f}  "
+                f"ent {stats['entropy']:.2f}  anneal {reward_fn.weight:.2f}  {sps:.0f} sps  "
+                f"eps {len(ep_metrics)}")
+        viz.emit_learn(viz_probe, global_step, stage=stage.name)
+        viz.emit_stats("training", {
+            "step": global_step, "win_rate": round(float(wins), 3),
+            "entropy": round(stats["entropy"], 3),
+            "policy_loss": round(stats["policy_loss"], 4),
+            "value_loss": round(stats["value_loss"], 4),
+            "sps": round(sps),
+        })
         if focused is not None:
             p = focused.rotation.progress()
-            print(f"    focus: deck {p['deck_index'] + 1}/{p['deck_total']} "
-                  f"{p['current_deck']}  vs-deck WR {p['current_deck_win_rate']:.2f} "
-                  f"({p['matches_vs_current']} m)  overall {p['overall_win_rate']:.2f}  "
-                  f"cycle {p['cycle']}")
+            _report(f"    focus: deck {p['deck_index'] + 1}/{p['deck_total']} "
+                    f"{p['current_deck']}  vs-deck WR {p['current_deck_win_rate']:.2f} "
+                    f"({p['matches_vs_current']} m)  overall {p['overall_win_rate']:.2f}  "
+                    f"cycle {p['cycle']}")
             if tb_writer is not None:
                 tb_writer.add_scalar("focus/deck_index", p["deck_index"], global_step)
                 tb_writer.add_scalar("focus/overall_win_rate",
@@ -537,7 +565,7 @@ def train_stage(
         if global_step >= next_snapshot:
             pool.snapshot(net, card_names, global_step)
             pool.save_ledger()
-            save_checkpoint(net, card_names, run_dir / "latest.pt")
+            save_checkpoint(net, card_names, run_dir / "latest.pt", card_levels=card_levels)
             next_snapshot += snapshot_every
 
         if exploiter_cfg.active and global_step >= next_exploiter:
@@ -562,8 +590,8 @@ def train_stage(
             if tb_writer is not None:
                 for bot, wr in scores.items():
                     tb_writer.add_scalar(f"eval/win_rate/{bot}", wr, global_step)
-            print(f"[{stage.name}] eval @ {global_step}: "
-                  + "  ".join(f"{b}={wr:.2f}" for b, wr in scores.items()))
+            _report(f"[{stage.name}] eval @ {global_step}: "
+                    + "  ".join(f"{b}={wr:.2f}" for b, wr in scores.items()))
             next_eval += eval_every
 
             promote = stage.promote
@@ -572,14 +600,16 @@ def train_stage(
                                      training_cfg, [promote.vs],
                                      matches=promote.matches, seed=global_step + 1)
                 if confirm[promote.vs] >= promote.win_rate:
-                    print(f"[{stage.name}] PROMOTED: {promote.vs} "
-                          f"win rate {confirm[promote.vs]:.2f} "
-                          f">= {promote.win_rate}")
-                    save_checkpoint(net, card_names, run_dir / f"{stage.name}_final.pt")
+                    _report(f"[{stage.name}] PROMOTED: {promote.vs} "
+                            f"win rate {confirm[promote.vs]:.2f} "
+                            f">= {promote.win_rate}")
+                    save_checkpoint(net, card_names, run_dir / f"{stage.name}_final.pt", card_levels=card_levels)
                     if tb_writer is not None:
                         tb_writer.close()
+                    viz.detach(viz_probe)
                     return global_step
-    save_checkpoint(net, card_names, run_dir / f"{stage.name}_final.pt")
+    viz.detach(viz_probe)
+    save_checkpoint(net, card_names, run_dir / f"{stage.name}_final.pt", card_levels=card_levels)
     if tb_writer is not None:
         tb_writer.close()
     return global_step
@@ -595,6 +625,9 @@ def main() -> None:
     parser.add_argument("--bc-init", default=None)
     parser.add_argument("--resume", default=None, help="checkpoint to continue from")
     parser.add_argument("--n-envs", type=int, default=None)
+    parser.add_argument("--torch-threads", type=int, default=1,
+                        help="Intra-op torch threads (default 1; small nets "
+                             "lose more to sync than they gain).")
     parser.add_argument("--n-workers", type=int, default=None,
                         help="Subprocess env workers (0 = single process). "
                              "Measured worthwhile only at high --n-envs: no "
@@ -602,6 +635,10 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--config", default=None,
                         help="training yaml path (default: configs/training.yaml)")
+    parser.add_argument("--card-levels", default=None,
+                        help="card-levels yaml (overrides the training config's "
+                             "`card_levels:` block). Levels are baked into the "
+                             "checkpoint so live play can reproduce them.")
     parser.add_argument("--global-step-start", type=int, default=0,
                         help="True cumulative step count so far, for a --resume that "
                              "continues an existing run under a new --run name. Without "
@@ -610,13 +647,35 @@ def main() -> None:
                              "even though the resumed network is already deep into "
                              "training — e.g. dense reward shaping would switch back on "
                              "for a policy that should be past it.")
+    parser.add_argument("--viz-port", type=int, default=None,
+                        help="serve the 3D network viewer on this port for the "
+                             "duration of the run (http://localhost:PORT). "
+                             "Off by default; when off the telemetry calls in "
+                             "the training loop are no-ops.")
+    parser.add_argument("--viz-host", default="127.0.0.1",
+                        help="bind address for --viz-port; loopback by default")
     args = parser.parse_args()
 
+    viz.start_server(args.viz_port, args.viz_host,
+                     mode_note=f"streaming from training run {args.run!r}")
+
+    # These nets are small and the batches are narrow, so intra-op threading
+    # costs more in synchronization than it recovers in arithmetic. Measured
+    # per policy step at 8 envs: 7.0 ms with 1 thread, 10.1 ms with 16, and a
+    # pathological 67.8 ms with 4. Overridable, but 1 is the right default.
+    torch.set_num_threads(max(1, args.torch_threads))
+
     torch.manual_seed(args.seed)
-    cards = load_cards()
-    arena = load_arena()
-    catalog = DeckCatalog()
     training_cfg = load_training_config(Path(args.config) if args.config else None)
+    # Card levels are chosen *before* anything loads a stat, because every
+    # deck, bot and env downstream reads these objects. Scaling later would
+    # leave some component playing a different game.
+    card_levels = (load_card_levels(path=args.card_levels) if args.card_levels
+                   else load_card_levels(training_cfg.raw.get("card_levels")))
+    print(f"[train] {describe(card_levels)}")
+    cards = scale_cards(load_cards(), card_levels)
+    arena = scale_arena(load_arena(), card_levels)
+    catalog = DeckCatalog(cards=cards)
     raw_ppo = training_cfg.raw.get("ppo", {})
     ppo_cfg = PPOConfig(
         n_steps=int(raw_ppo.get("n_steps", 512)),
@@ -680,7 +739,7 @@ def main() -> None:
             run_dir=run_dir, global_step=global_step, step_budget=budget,
             n_envs=n_envs, n_workers=n_workers, seed=args.seed, tier=tier,
             obs_noise_cfg=obs_noise_cfg)
-    save_checkpoint(net, card_names, run_dir / "final.pt")
+    save_checkpoint(net, card_names, run_dir / "final.pt", card_levels=card_levels)
     print(f"[train] done at step {global_step}; saved {run_dir / 'final.pt'}")
 
 

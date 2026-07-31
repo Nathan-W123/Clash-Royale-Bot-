@@ -23,6 +23,9 @@ A reinforcement learning agent that learns to play Clash Royale entirely inside 
 | Arena perception | ✅ | Homography + team-tinted blob detection (`src/live/`) |
 | Inference-time search | ✅ | Sim-only rollout search (`src/agent/search.py`) |
 | Population-based training | ✅ | Hyperparameter search on the frozen benchmark (`src/agent/pbt.py`) |
+| 3D network viewer | ✅ | Live WebGL view of the policy while it trains or plays (`src/viz/`) |
+| Card levels | ✅ | Train at your real in-game levels (`configs/card_levels.yaml`) |
+| **Policy-driven live play** | ✅ | A trained checkpoint drives the bridge (`src/live/bridge.py`) |
 
 ---
 
@@ -395,6 +398,42 @@ Key files — edit YAML, not code, for balance and training tweaks:
 - **`configs/card_categories.yaml`** — adaptive builder role mapping
 - **`configs/training.yaml`** — PPO settings, `focused_rotation`, `adaptive_deck`
 - **`configs/eval.yaml`** — benchmark roster (never delete opponents)
+
+---
+
+## Playing your own deck live
+
+`docs/LIVE_WORKFLOW.md` is the end-to-end path: pick the deck, set your real
+card levels, train it against the ladder field, calibrate the bridge, dry-run,
+then arm.
+
+```bash
+# 1. edit configs/decks.yaml -> my_deck, and configs/card_levels.yaml
+# 2. train it against the field (your deck pinned, opponents sampled)
+python -m src.agent.train --run my_deck --stage my_deck   --config configs/training_human.yaml
+# 3. calibrate configs/live_play.yaml (decision_mode: policy)
+# 4. watch it decide without tapping, then arm
+python -m src.live --config configs/live_play.yaml
+python -m src.live --config configs/live_play.yaml --armed
+```
+
+The bridge reconstructs a *shadow engine* from perception
+(`src/live/bridge.py`) and reuses the simulator's own observation encoder and
+action masking, so the policy sees exactly the action space it trained on
+rather than a re-implementation that could drift. A `full`-tier checkpoint is
+refused — it reads opponent elixir, which no player can see. If perception
+drops out mid-match the runner degrades to the heuristic rather than acting
+on a fabricated board.
+
+### Card levels
+
+`configs/cards.yaml` holds level-1 values, and `configs/card_levels.yaml`
+scales them to the levels you actually own — using the real per-level ladders,
+not a 10%/level approximation. It matters for two reasons: **mixed levels**
+move every breakpoint in a deck, and per-card **rounding** means even a
+uniform shift is not exactly a no-op (59 distinct HP ladders across the
+roster). Levels are recorded in the checkpoint, and the live bridge reads
+them from there, so the deployed policy always plays the game it trained on.
 
 ---
 

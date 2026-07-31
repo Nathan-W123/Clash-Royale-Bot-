@@ -346,31 +346,48 @@ class PolicyNetwork(nn.Module):
         `bptt_chunk` detaches the hidden state every N steps, bounding the
         backward graph without breaking the forward recurrence.
         """
-        n_steps = actions_seq.shape[0]
-        hidden = initial_hidden
-        log_probs, entropies, values = [], [], []
+        n_steps, n_envs = actions_seq.shape[0], actions_seq.shape[1]
+        flat = n_steps * n_envs
 
+        # Only the GRU is order-dependent. The trunk and the heads are
+        # feedforward, so they run once over the whole flattened (T*B) batch
+        # instead of once per timestep. Stepping them per-timestep instead
+        # measured ~2 steps/sec end-to-end versus ~200 for the feedforward
+        # policy — almost entirely Python-loop overhead on tiny tensors,
+        # not arithmetic.
+        flat_obs = {k: v.reshape(flat, *v.shape[2:]) for k, v in obs_seq.items()}
+        flat_masks = {k: v.reshape(flat, *v.shape[2:]) for k, v in masks_seq.items()}
+        feats = self.trunk(flat_obs).view(n_steps, n_envs, -1)
+
+        outs = []
+        hidden = initial_hidden
         for t in range(n_steps):
             if bptt_chunk and t and t % bptt_chunk == 0:
                 hidden = hidden.detach()
-            obs_t = {k: v[t] for k, v in obs_seq.items()}
-            masks_t = {k: v[t] for k, v in masks_seq.items()}
             # dones[t-1] gates step t: it marks the episode that ended just
             # before this observation was produced.
-            done_t = dones_seq[t - 1] if t > 0 else None
-            feat, hidden = self.recurrent_step(self.trunk(obs_t), hidden, done_t)
+            if t > 0:
+                hidden = hidden * (~dones_seq[t - 1]).to(hidden.dtype).view(1, -1, 1)
+            out, hidden = self.gru(feats[t].unsqueeze(0), hidden)
+            outs.append(out.squeeze(0))
+        feat = torch.stack(outs)
+        if hasattr(self, "gru_proj"):
+            feat = self.gru_proj(feat)
+        feat = feat.reshape(flat, -1)
 
-            card, cell = actions_seq[t, :, 0], actions_seq[t, :, 1]
-            card_dist = torch.distributions.Categorical(
-                logits=self.card_logits(feat, masks_t["card"]))
-            place_dist = torch.distributions.Categorical(
-                logits=self.place_logits(feat, obs_t["cards"], card, masks_t["place"]))
-            played = (card > 0).float()
-            log_probs.append(card_dist.log_prob(card) + played * place_dist.log_prob(cell))
-            entropies.append(card_dist.entropy() + played * place_dist.entropy())
-            values.append(self.value_of(obs_t, feat))
+        card = actions_seq[:, :, 0].reshape(flat)
+        cell = actions_seq[:, :, 1].reshape(flat)
+        card_dist = torch.distributions.Categorical(
+            logits=self.card_logits(feat, flat_masks["card"]))
+        place_dist = torch.distributions.Categorical(
+            logits=self.place_logits(feat, flat_obs["cards"], card, flat_masks["place"]))
+        played = (card > 0).float()
+        log_prob = card_dist.log_prob(card) + played * place_dist.log_prob(cell)
+        entropy = card_dist.entropy() + played * place_dist.entropy()
+        value = self.value_of(flat_obs, feat)
 
-        return (torch.stack(log_probs), torch.stack(entropies), torch.stack(values))
+        shape = (n_steps, n_envs)
+        return log_prob.view(shape), entropy.view(shape), value.view(shape)
 
     def critic_trunk(self, obs: dict[str, torch.Tensor]) -> torch.Tensor:
         """Trunk for the privileged value function (#26).

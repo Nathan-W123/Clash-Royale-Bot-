@@ -1,6 +1,12 @@
 # Named decks. Decks must have >= 5 cards (4-card hand + next); standard is 8.
 # Rules: max 1 hero, max 1 evolution; never include both base and _evo card.
 training_mirror: [knight, archers, goblins, giant, musketeer, minions, fireball, cannon]
+
+# The eight cards you actually have equipped in-game. This is the deck the
+# `my_deck` curriculum stage trains on and the one the live bridge plays, so
+# it must match your in-game loadout exactly — same cards, and levels set in
+# configs/card_levels.yaml. Edit this, not the archetype decks below.
+my_deck: [knight, archers, goblins, giant, musketeer, minions, fireball, cannon]
 stage0: [knight, archers, goblins, giant, musketeer, fireball]
 rusher: [hog_rider, giant, goblins, skeletons_evo, minions, zap, mini_pekka, golden_knight]
 control: [knight_evo, archers, musketeer, valkyrie, fireball, zap, cannon, archer_queen]

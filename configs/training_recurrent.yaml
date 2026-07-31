@@ -1,7 +1,21 @@
+# Recurrent policy (#27) on top of the asymmetric-critic config.
+#
+# Why recurrence: the `restricted` tier cannot see enemy troops at all, so
+# "their elixir dropped 5 two seconds ago, a push is coming" exists only
+# across time. A feedforward net has no mechanism to represent it, which is
+# the leading explanation for the persistent ~16% win rate vs rusher.
+#
+# Measured cost after batching the trunk across the sequence: ~none. Same
+# stage and settings, only recurrence differing, gave 17-20 sps recurrent vs
+# 19 sps feedforward. The naive per-timestep implementation managed 2 sps.
+#
+# n_steps is deliberately shorter than the feedforward configs: the recurrent
+# update replays sequences, so cost scales with rollout length, and BPTT over
+# 512 steps is far longer than this game's useful credit horizon.
 ppo:
   n_envs: 8
-  n_steps: 512
-  batch_size: 1024
+  n_steps: 128
+  batch_size: 512
   n_epochs: 4
   lr: 0.0003
   gamma: 0.997

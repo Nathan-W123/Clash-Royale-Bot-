@@ -11,7 +11,7 @@ from src.bots.base import Bot
 from src.bots.registry import get_bot
 from src.decks.catalog import DeckCatalog
 from src.eval.reporter import TrainingReporter
-from src.simulator.cards import CONFIG_DIR, load_arena
+from src.simulator.cards import CONFIG_DIR, ArenaConfig, load_arena
 from src.simulator.constants import Side
 from src.training.config import load_training_config
 from src.training.match_runner import run_match_detailed
@@ -40,10 +40,13 @@ def run_benchmark(
     catalog: DeckCatalog | None = None,
     seed: int = 0,
     run_name: str = "benchmark",
+    arena_override: ArenaConfig | None = None,
 ) -> TrainingReporter:
     """Pit an agent bot against the frozen benchmark roster."""
     catalog = catalog or DeckCatalog()
-    arena = load_arena()
+    # Take the arena from the caller's catalog when it carries level-scaled
+    # cards, so a benchmark never mixes scaled troops with level-1 towers.
+    arena = arena_override or load_arena()
     training = load_training_config()
     matches = matches_per_opponent or training.raw["eval"]["matches_per_opponent"]
     opponents = load_benchmark_opponents()
@@ -70,6 +73,7 @@ def run_benchmark(
                 seed=int(rng.integers(0, 2**31)),
                 bottom_deck_name=agent_deck_name,
                 top_deck_name=opp.deck_name,
+                cards=catalog.cards,
             )
             reporter.record_report(
                 report,

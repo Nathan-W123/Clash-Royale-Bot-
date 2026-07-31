@@ -62,6 +62,62 @@ def mean_luma(image: Image.Image, rect: Rect) -> float:
     return float(np.mean(0.2126 * pixels[:, :, 0] + 0.7152 * pixels[:, :, 1] + 0.0722 * pixels[:, :, 2]))
 
 
+# The elixir bar's filled portion is a solid magenta; the empty remainder is
+# a dark trough. Same segmentation idea as health bars, one dimension.
+ELIXIR_HUE_CENTER = 310.0
+ELIXIR_HUE_TOLERANCE = 35.0
+ELIXIR_MIN_SATURATION = 0.35
+ELIXIR_MAX = 10.0
+
+
+def read_elixir(
+    image: Image.Image | np.ndarray,
+    rect: Rect,
+    max_elixir: float = ELIXIR_MAX,
+    hue_center: float = ELIXIR_HUE_CENTER,
+    hue_tolerance: float = ELIXIR_HUE_TOLERANCE,
+    min_saturation: float = ELIXIR_MIN_SATURATION,
+) -> float | None:
+    """Own elixir, read off the bar. None when the bar can't be found.
+
+    Returns a *continuous* value rather than snapping to whole pips: elixir
+    regenerates continuously and the affordability mask only cares whether
+    the count has crossed a card's cost, so rounding to pips would make a
+    card look unaffordable for up to a second after it actually became
+    playable.
+
+    None is a meaningful answer, not an error — it means the HUD is not
+    visible (between matches, or the window is occluded), and the caller
+    should hold rather than act on a fabricated zero.
+    """
+    array = np.asarray(image)
+    if array.ndim == 3 and array.shape[2] >= 3:
+        crop = array[rect.y:rect.y + rect.height, rect.x:rect.x + rect.width]
+    else:
+        return None
+    if crop.size == 0:
+        return None
+
+    hue, sat, val = rgb_to_hsv(crop)
+    delta = np.abs(((hue - hue_center) + 180.0) % 360.0 - 180.0)
+    filled = (delta <= hue_tolerance) & (sat >= min_saturation)
+    # The unfilled remainder is the bar's dark trough. A region that is
+    # neither magenta nor trough is not an elixir bar at all — the HUD is
+    # occluded, or the window is showing something else — and that has to be
+    # distinguishable from a genuinely empty bar, which *is* mostly trough.
+    trough = (sat < min_saturation) & (val < 0.55)
+    if (filled | trough).mean() < 0.3:
+        return None
+    if not filled.any():
+        return 0.0
+
+    # Fraction of *columns* that are filled, not of pixels: the bar is one
+    # horizontal gauge, and a column-wise read is unaffected by the pip
+    # dividers and rounded end-caps that break up a pixel count.
+    column_filled = filled.mean(axis=0) > 0.5
+    return float(column_filled.sum()) / column_filled.size * max_elixir
+
+
 # ------------------------------------------------------------------- colour
 
 TEAM_HOSTILE = "hostile"

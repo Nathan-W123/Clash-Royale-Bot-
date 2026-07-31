@@ -473,6 +473,56 @@ generates a synthetic frame; drop real annotated captures into
 
 ---
 
+## 3D network viewer
+
+`src/viz/` serves a WebGL view of the policy network — the real one, derived
+from the module tree, so it changes when `use_set_encoder`, `use_recurrence`
+or `critic_tier` change. A terminal pane underneath carries the same output
+the process prints.
+
+```bash
+python -m src.viz                                    # fresh net, watch it learn
+python -m src.viz --checkpoint checkpoints/full_pool_60m.pt --mode live
+```
+
+Then open <http://localhost:8770>. Drag to orbit, right-drag or shift-drag to
+pan, wheel to zoom, `WASD`/`QE` to fly, `R` to reframe, `F` to toggle labels.
+
+To watch a **real** run rather than the self-contained sources above, attach
+the viewer to the process doing the work:
+
+```bash
+python -m src.agent.train --run r1 --stage full_pool --viz-port 8770
+python -m src.live --config configs/live_play.yaml --checkpoint ckpt.pt --viz-port 8770
+```
+
+Two signals drive the picture, and they mean different things:
+
+| Signal | Shows | Drives |
+|--------|-------|--------|
+| **activation** | what fired on the last forward pass | travelling pulses along edges, node flare |
+| **reveal** | how far each unit's weights have moved *since the viewer attached* | node size and opacity |
+
+**The network does not grow while training** — the architecture is fixed at
+construction. What grows is how much of it has demonstrably *changed*:
+`reveal` is monotonic, so an untrained net starts as a faint skeleton and
+fills in, and a unit whose weights never move stays dark. Because movement is
+measured from attach, a loaded checkpoint starts at zero; `maturity`
+(weight-norm dispersion) is sent alongside so a trained network still renders
+as one.
+
+Two deliberate simplifications, both stated in the UI: layers wider than 48
+units are drawn with 48 evenly spaced **real** units, and edges are the 3
+strongest incoming weights per drawn node — a 256x256 layer pair is 65k lines
+and renders as a grey slab.
+
+The server binds to loopback and is off unless asked for; with no viewer
+attached the telemetry calls in the training loop are no-ops. Add `?snapshot`
+to the URL to hold the last frame and drop the stream, which is what makes
+the page capturable by screenshot tools.
+
+---
+
 ## Simulator fidelity
 
 `docs/SIM_FIDELITY.md` is the audit of where the simulation diverges from
